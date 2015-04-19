@@ -23,8 +23,8 @@ class SchoolFieldName(models.Model):
 
 class ArchiveData(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
-    school = models.ForeignKey('School', blank=True, null=True, db_column='koulun_id')
-    nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
+    school = models.ForeignKey('School', null=True, db_column='koulun_id')
+    name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
     data_type = models.ForeignKey(DataType, blank=True, null=True, db_column='aineistotyypin_id')
     location = models.CharField(max_length=510, blank=True, db_column='sijainti')
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
@@ -38,7 +38,7 @@ class ArchiveData(models.Model):
 
 class LifecycleEvent(models.Model):
     school = models.ForeignKey('School', db_column='koulun_id')
-    lifecycleeventtype = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id')
+    type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id')
     day = models.IntegerField(blank=True, null=True, db_column='paiva')
     month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
     year = models.IntegerField(db_column='vuosi')
@@ -46,7 +46,7 @@ class LifecycleEvent(models.Model):
     decision_day = models.IntegerField(blank=True, null=True, db_column='paatoksen_paiva')
     decision_month = models.IntegerField(blank=True, null=True, db_column='paatoksen_kuukausi')
     decision_year = models.IntegerField(blank=True, null=True, db_column='paatoksen_vuosi')
-    lis_tietoja = models.CharField(db_column='lis\xe4tietoja', max_length=510, blank=True)
+    additional_info = models.CharField(db_column='lis\xe4tietoja', max_length=510, blank=True)
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx = models.BooleanField(default=False, db_column='noin')
 
@@ -64,10 +64,10 @@ class LifecycleEventType(models.Model):
         db_table = 'Elinkaaritapahtuman_laji'
 
 
-class Jatkumo(models.Model):
-    koulun_a = models.ForeignKey('School', db_column='koulun_a_id', related_name='jatkumo_a')
+class SchoolContinuum(models.Model):
+    school_a = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_a')
     description = models.CharField(max_length=510, blank=True, db_column='selite')
-    koulun_b = models.ForeignKey('School', db_column='koulun_b_id', related_name='jatkumo_b')
+    school_b = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_b')
     day = models.IntegerField(blank=True, null=True, db_column='paiva')
     month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
     year = models.IntegerField(blank=True, null=True, db_column='vuosi')
