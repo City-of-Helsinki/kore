@@ -3,3 +3,4 @@ djangorestframework
 Markdown
 django-filter
 django-admin-bootstrapped==2.4.0
+psycopg2
