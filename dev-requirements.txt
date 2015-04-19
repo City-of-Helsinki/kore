@@ -1,0 +1,4 @@
+-r requirements.txt
+-e git+https://github.com/coagulant/django-devserver.git#egg=django_devserver
+werkzeug
+line_profiler
