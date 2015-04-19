@@ -107,6 +107,14 @@ class School(models.Model):
     nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet')
     checked = models.BooleanField(default=False, db_column='tarkastettu')
 
+    def __str__(self):
+        types = NameType.objects.filter(name__school=self).order_by('-name__begin_year')\
+            .filter(type='virallinen nimi')
+        if not types:
+            return '<no name>'
+        else:
+            return types[0].value
+
     class Meta:
         managed = False
         db_table = 'Koulu'
@@ -328,7 +336,8 @@ class Address(models.Model):
 class BuildingName(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
-    building = models.ForeignKey('Building', blank=True, null=True, db_column='rakennuksen_id')
+    building = models.ForeignKey('Building', blank=True, null=True, db_column='rakennuksen_id',
+                                 related_name='names')
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
     end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
@@ -360,7 +369,8 @@ class BuildingOwnership(models.Model):
 
 class BuildingAddress(models.Model):
     building = models.ForeignKey('Building', db_column='rakennuksen_id')
-    address = models.ForeignKey(Address, db_column='osoitteen_id')
+    address = models.ForeignKey(Address, db_column='osoitteen_id',
+                                related_name='buildings')
 
     class Meta:
         managed = False
@@ -368,6 +378,7 @@ class BuildingAddress(models.Model):
 
 
 class SchoolBuilding(models.Model):
+    id = models.CharField(max_length=100, primary_key=True)
     school = models.ForeignKey(School, related_name='buildings', db_column='koulun_id')
     building = models.ForeignKey('Building', db_column='rakennuksen_id')
     ownership = models.BooleanField(default=False, db_column='omistus')
@@ -380,6 +391,21 @@ class SchoolBuilding(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
+
+    def __str__(self):
+        s = ''
+        if self.begin_year:
+            s += str(self.begin_year) + '-'
+        if self.end_year:
+            if not s:
+                s += '-'
+            s += str(self.end_year)
+
+        return "%s / %s (%s)" % (self.school, self.building, s)
+
+    def has_photo(self):
+        return bool(self.photos.all())
+    has_photo.boolean = True
 
     class Meta:
         managed = False
@@ -400,6 +426,18 @@ class Building(models.Model):
     approx = models.BooleanField(default=False, db_column='noin')
 
     addresses = models.ManyToManyField(Address, through=BuildingAddress)
+
+    def __str__(self):
+        addresses = self.addresses.order_by('-begin_year')
+        s = None
+        if addresses:
+            s = addresses[0].street_name_fi
+        if not s:
+            s = '<no address>'
+        names = self.names.order_by('-begin_year')
+        if names:
+            s += ' (%s)' % names[0].name
+        return s
 
     class Meta:
         managed = False
@@ -434,3 +472,12 @@ class Employership(models.Model):
     class Meta:
         managed = False
         db_table = 'Tyosuhde'
+
+
+class SchoolBuildingPhoto(models.Model):
+    school_building = models.ForeignKey(SchoolBuilding, related_name='photos')
+    url = models.URLField()
+    is_front = models.BooleanField(default=True, help_text="Is this a picture of the building front?")
+
+    def __str__(self):
+        return str(self.school_building)
