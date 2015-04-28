@@ -410,6 +410,7 @@ class SchoolBuilding(models.Model):
     class Meta:
         managed = False
         db_table = 'Rakennuksen_status'
+        ordering = ['school']
 
 
 class Building(models.Model):
