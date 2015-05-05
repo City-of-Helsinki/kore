@@ -5,3 +5,5 @@ local_settings.py
 config
 env
 roles
+migrations
+.idea
