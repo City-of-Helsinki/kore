@@ -76,6 +76,7 @@ class BuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Building
+        exclude = ('photo',)
 
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
 
