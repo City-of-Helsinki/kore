@@ -11,7 +11,7 @@ class SchoolNameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolName
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolLanguageSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class SchoolLanguageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolLanguage
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolTypeNameSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class SchoolTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolType
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolFieldNameSerializer(serializers.ModelSerializer):
@@ -45,31 +45,29 @@ class SchoolFieldSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolField
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolGenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolGender
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolNumberOfGradesSerializer(serializers.ModelSerializer):
     class Meta:
         model = NumberOfGrades
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class NeighborhoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Neighborhood
-        exclude = ('id',)
 
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        exclude = ('id',)
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -78,7 +76,6 @@ class BuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Building
-        exclude = ('id',)
 
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
 
@@ -94,7 +91,7 @@ class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolBuildingPhoto
-        exclude = ('id', 'school_building')
+        exclude = ('school_building',)
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):
     building = BuildingSerializer()
@@ -102,7 +99,7 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolBuilding
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class OwnerFounderSerializer(serializers.ModelSerializer):
@@ -110,7 +107,6 @@ class OwnerFounderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OwnerFounder
-        exclude = ('id',)
 
 
 class SchoolOwnershipSerializer(serializers.ModelSerializer):
@@ -118,7 +114,7 @@ class SchoolOwnershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolOwnership
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolFounderSerializer(serializers.ModelSerializer):
@@ -126,7 +122,7 @@ class SchoolFounderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolFounder
-        exclude = ('id', 'school')
+        exclude = ('school',)
 
 
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
