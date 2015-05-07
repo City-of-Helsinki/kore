@@ -80,9 +80,25 @@ class BuildingSerializer(serializers.ModelSerializer):
         model = Building
         exclude = ('id',)
 
+class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
+
+    def to_representation(self, instance):
+        # we have to reformat the URL representation so that our API serves the corresponding photo URL
+        # this method will have to be updated whenever Finna API changes!
+        representation = super(SchoolBuildingPhotoSerializer, self).to_representation(instance)
+        representation['url'] = representation['url'].replace(
+            '.finna.fi/Record/',
+            '.finna.fi/thumbnail.php?id='
+        ) + '&size=large'
+        return representation
+
+    class Meta:
+        model = SchoolBuildingPhoto
+        exclude = ('id', 'school_building')
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):
     building = BuildingSerializer()
+    photos = SchoolBuildingPhotoSerializer(many=True)
 
     class Meta:
         model = SchoolBuilding
