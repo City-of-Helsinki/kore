@@ -126,6 +126,20 @@ class SchoolFounderSerializer(serializers.ModelSerializer):
         exclude = ('school',)
 
 
+class PrincipalSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Principal
+
+
+class EmployershipSerializer(serializers.ModelSerializer):
+    principal = PrincipalSerializer()
+
+    class Meta:
+        model = Employership
+        exclude = ('school', 'nimen_id')
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -136,6 +150,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     buildings = SchoolBuildingSerializer(many=True)
     owners = SchoolOwnershipSerializer(many=True)
     founders = SchoolFounderSerializer(many=True)
+    principals = EmployershipSerializer(many=True)
 
     class Meta:
         model = School
