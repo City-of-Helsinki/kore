@@ -1,4 +1,4 @@
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers, serializers, viewsets, mixins
 from .models import *
 
 
@@ -130,6 +130,10 @@ class PrincipalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Principal
+        # finite depth is required to prevent infinite loop
+        depth = 2
+        # fields must be declared here, because Employershipserializer isn't defined yet
+        fields = ('url', 'id', 'surname', 'first_name', 'employers')
 
 
 class EmployershipSerializer(serializers.ModelSerializer):
@@ -156,9 +160,20 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
         model = School
 
 
-class SchoolViewSet(viewsets.ModelViewSet):
+class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 
+
+class PrincipalViewSet(mixins.RetrieveModelMixin,
+                       viewsets.GenericViewSet):
+    """
+    Listing principals requires you to submit a query parameter for principal name
+    """
+
+    queryset = Principal.objects.all()
+    serializer_class = PrincipalSerializer
+
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
+router.register(r'principal', PrincipalViewSet)

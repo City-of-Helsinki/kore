@@ -459,7 +459,7 @@ class Employership(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id')
     nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
-    principal = models.ForeignKey(Principal, blank=True, null=True, db_column='rehtorin_id')
+    principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
