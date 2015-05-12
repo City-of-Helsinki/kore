@@ -1,4 +1,4 @@
-from rest_framework import routers, serializers, viewsets, mixins
+from rest_framework import routers, serializers, viewsets, mixins, filters
 from .models import *
 
 
@@ -163,6 +163,12 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('names__types__value',
+                     'principals__principal__first_name',
+                     'principals__principal__surname',
+                     'buildings__building__buildingaddress__address__street_name_fi',
+                     'buildings__building__buildingaddress__address__street_name_sv')
 
 
 class PrincipalViewSet(mixins.RetrieveModelMixin,
