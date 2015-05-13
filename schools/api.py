@@ -158,6 +158,10 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = School
+        # fields must be declared here to explicitly include id along with url
+        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
+                  'grade_counts', 'buildings', 'owners', 'founders', 'principals',
+                  'special_features', 'wartime_school', 'nicknames', 'checked')
 
 
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
