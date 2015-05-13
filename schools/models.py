@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from munigeo.models import Address as Location
 
 
 class DataType(models.Model):
@@ -332,6 +333,9 @@ class Address(models.Model):
         managed = False
         db_table = 'Osoite'
 
+    def __str__(self):
+        return str(self.street_name_fi) + ', ' + str(self.municipality_fi)
+
 
 class BuildingName(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
@@ -482,3 +486,11 @@ class SchoolBuildingPhoto(models.Model):
 
     def __str__(self):
         return str(self.school_building)
+
+
+class AddressLocation(models.Model):
+    address = models.ForeignKey(Address, related_name='addresslocation')
+    location = models.ForeignKey(Location, related_name='addresslocation')
+
+    def __str__(self):
+        return str(self.address) + ' <=> ' + str(self.location)
