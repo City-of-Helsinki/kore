@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'corsheaders',
-
+    'munigeo',
     'schools',
+    'modeltranslation',
+    'django.contrib.gis'
 ]
 
 #if DEBUG:
@@ -68,10 +70,23 @@ WSGI_APPLICATION = 'kore.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'kore',
     }
 }
+
+# Munigeo
+# https://github.com/City-of-Helsinki/munigeo
+
+PROJECTION_SRID = 3067
+
+# If no country specified (for example through a REST API call), use this
+# as default.
+DEFAULT_COUNTRY = 'fi'
+# The word used for municipality in the OCD identifiers in the default country.
+DEFAULT_OCD_MUNICIPALITY = 'kunta'
+
+BOUNDING_BOX = [-548576, 6291456, 1548576, 8388608]
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -86,6 +101,12 @@ USE_L10N = True
 
 USE_TZ = True
 
+gettext = lambda s: s
+LANGUAGES = (
+    ('fi', gettext('Finnish')),
+    ('sv', gettext('Swedish')),
+    ('en', gettext('English')),
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
