@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'raven.contrib.django.raven_compat',
     'rest_framework',
+    'corsheaders',
 
     'schools',
 ]
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -96,6 +98,8 @@ REST_FRAMEWORK = {
     'MAX_PAGINATE_BY': 1000,             # Maximum limit allowed when using `?page_size=xxx`.
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 # local_settings.py can be used to override environment-specific settings
 # like database and email that differ between development and production.

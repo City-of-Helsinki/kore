@@ -6,3 +6,4 @@ django-admin-bootstrapped==2.4.0
 psycopg2
 raven
 django-extensions
+django-cors-headers
