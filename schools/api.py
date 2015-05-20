@@ -1,4 +1,5 @@
 from rest_framework import routers, serializers, viewsets, mixins, filters
+from munigeo.api import GeoModelSerializer
 from .models import *
 
 
@@ -65,7 +66,21 @@ class NeighborhoodSerializer(serializers.ModelSerializer):
         model = Neighborhood
 
 
+class AddressLocationSerializer(GeoModelSerializer):
+    class Meta:
+        model = AddressLocation
+        exclude = ('id', 'address')
+
+
 class AddressSerializer(serializers.ModelSerializer):
+    location = AddressLocationSerializer(required=False)
+
+    def to_representation(self, obj):
+        ret = super(AddressSerializer, self).to_representation(obj)
+        if ret['location']:
+            ret['location'] = ret['location']['location']
+        return ret
+
     class Meta:
         model = Address
 
