@@ -24,7 +24,7 @@ class SchoolFieldName(models.Model):
 
 class ArchiveData(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
-    school = models.ForeignKey('School', null=True, db_column='koulun_id')
+    school = models.ForeignKey('School', null=True, db_column='koulun_id', related_name='archives')
     name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
     data_type = models.ForeignKey(DataType, blank=True, null=True, db_column='aineistotyypin_id')
     location = models.CharField(max_length=510, blank=True, db_column='sijainti')

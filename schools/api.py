@@ -146,6 +146,20 @@ class EmployershipSerializer(serializers.ModelSerializer):
         exclude = ('school', 'nimen_id')
 
 
+class DataTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DataType
+
+
+class ArchiveDataSerializer(serializers.ModelSerializer):
+    data_type = DataTypeSerializer()
+
+    class Meta:
+        model = ArchiveData
+        exclude = ('id',)
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -157,13 +171,15 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     owners = SchoolOwnershipSerializer(many=True)
     founders = SchoolFounderSerializer(many=True)
     principals = EmployershipSerializer(many=True)
+    archives = ArchiveDataSerializer(many=True, required=False)
 
     class Meta:
         model = School
         # fields must be declared here to explicitly include id along with url
         fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
-                  'special_features', 'wartime_school', 'nicknames', 'checked')
+                  'special_features', 'wartime_school', 'nicknames', 'checked',
+                  'archives')
 
 
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
