@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.db import models
+from django.contrib.gis.db import models
 from munigeo.models import Address as Location
 
 
@@ -489,8 +489,8 @@ class SchoolBuildingPhoto(models.Model):
 
 
 class AddressLocation(models.Model):
-    address = models.ForeignKey(Address, related_name='addresslocation')
-    location = models.ForeignKey(Location, related_name='addresslocation')
+    address = models.OneToOneField(Address, related_name='location', db_index=True)
+    location = models.PointField()
 
     def __str__(self):
         return str(self.address) + ' <=> ' + str(self.location)
