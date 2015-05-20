@@ -78,6 +78,7 @@ class BuildingSerializer(serializers.ModelSerializer):
         model = Building
         exclude = ('photo',)
 
+
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
@@ -93,6 +94,7 @@ class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolBuildingPhoto
         exclude = ('school_building',)
+
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):
     building = BuildingSerializer()
