@@ -492,5 +492,7 @@ class AddressLocation(models.Model):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
     location = models.PointField()
 
+    objects = models.GeoManager()
+
     def __str__(self):
         return str(self.address) + ' <=> ' + str(self.location)
