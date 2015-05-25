@@ -491,6 +491,7 @@ class SchoolBuildingPhoto(models.Model):
 class AddressLocation(models.Model):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
     location = models.PointField()
+    handmade = models.BooleanField(default=False)
 
     objects = models.GeoManager()
 
