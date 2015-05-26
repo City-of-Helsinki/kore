@@ -46,8 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.gis'
 ]
 
-#if DEBUG:
-#    INSTALLED_APPS.insert(0, 'devserver')
+if DEBUG:
+    # INSTALLED_APPS.insert(0, 'devserver')
+    INSTALLED_APPS.insert(0, 'debug_toolbar')
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
