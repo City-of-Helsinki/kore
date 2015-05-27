@@ -3,6 +3,7 @@ from munigeo.api import GeoModelSerializer
 from .models import *
 import django_filters
 from django import forms
+from rest_framework.exceptions import ParseError
 
 
 class SchoolNameSerializer(serializers.ModelSerializer):
@@ -257,6 +258,27 @@ class NameOrIdFilter(django_filters.Filter):
         return super().filter(qs, value)
 
 
+class GenderFilter(django_filters.CharFilter):
+    """
+    Filter that maps letters m, f and c to hard-coded genders
+    """
+
+    GENDER_MAP = {
+        'm': 'poikakoulu',
+        'f': 'tyttökoulu',
+        'c': 'tyttö- ja poikakoulu'
+    }
+
+    def filter(self, qs, value):
+        if value in ([], (), {}, None, ''):
+            return qs
+        val = str(value).lower()
+        if val not in self.GENDER_MAP and val not in self.GENDER_MAP.values():
+            raise ParseError("Gender must be 'm', 'f' or 'c' (for coed)")
+        value = self.GENDER_MAP.get(val, val)
+        return super().filter(qs, value)
+
+
 class SchoolFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
     from_year = InclusiveNumberFilter(name="names__end_year", lookup_type='gte')
@@ -264,7 +286,7 @@ class SchoolFilter(django_filters.FilterSet):
     type = NameOrIdFilter(name="types__type__name", lookup_type='iexact')
     field = NameOrIdFilter(name="fields__field__description", lookup_type='iexact')
     language = NameOrIdFilter(name="languages__language__name", lookup_type='iexact')
-    gender = django_filters.CharFilter(name="genders__gender", lookup_type='iexact')
+    gender = GenderFilter(name="genders__gender", lookup_type='iexact')
 
     class Meta:
         model = School
