@@ -23,6 +23,16 @@ class SchoolLanguageSerializer(serializers.ModelSerializer):
         exclude = ('school',)
 
 
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Language
+
+
+class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Language.objects.all()
+    serializer_class = LanguageSerializer
+
+
 class SchoolTypeNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolTypeName
@@ -232,3 +242,4 @@ router.register(r'school', SchoolViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
+router.register(r'language', LanguageViewSet)
