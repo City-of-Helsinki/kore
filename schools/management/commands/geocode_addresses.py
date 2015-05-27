@@ -10,7 +10,7 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--rewrite-existing',
                     action='store_true',
-                    dest='remove',
+                    dest='rewrite_existing',
                     default=False,
                     help='Rewrites all automatically geocoded addresses'),
     )
@@ -18,25 +18,37 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for address in Address.objects.all():
             if hasattr(address, 'location'):
-                if options['remove'] and not address.location.handmade:
-                    address.location.delete()
-                    self.stdout.write(str(address) + ' geocoding deleted')
-                else:
-                    continue
+                location = address.location
+            else:
+                location = AddressLocation(address=address, handmade=False)
+
+            # Skip all manually geocoded locations
+            if location.handmade:
+                continue
+
+            if location.location is not None and not options['rewrite_existing']:
+                continue
+
             address_street, town = str(address).split(', ')
             address_street_number = re.split('( [0-9]+)', address_street)
             address_street = address_street_number[0]
             if len(address_street_number) > 1:
                 address_number = address_street_number[1].strip()
             else:
-                continue
-            match = MuniAddress.objects.filter(
-                street__name=address_street, number=address_number,
-                street__municipality__name=town
-            ).first()
+                address_number = None
+
+            if address_number is not None:
+                match = MuniAddress.objects.filter(
+                    street__name=address_street, number=address_number,
+                    street__municipality__name=town
+                ).first()
+            else:
+                match = None
+
             if match is not None:
                 self.stdout.write(str(address) + ' geocoded as ' + str(match))
-                location = AddressLocation(address=address, location=match.location)
-                location.save()
+                location.location = match.location
             else:
+                location.location = None
                 self.stdout.write(str(address) + ' match not found')
+            location.save()

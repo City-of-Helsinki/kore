@@ -490,10 +490,19 @@ class SchoolBuildingPhoto(models.Model):
 
 class AddressLocation(models.Model):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
-    location = models.PointField()
+    location = models.PointField(srid=4326, null=True, blank=True)
     handmade = models.BooleanField(default=False)
 
     objects = models.GeoManager()
 
+    def has_location(self):
+        return self.location is not None
+    has_location.boolean = True
+
     def __str__(self):
-        return str(self.address) + ' <=> ' + str(self.location)
+        schools = School.objects.filter(buildings__building__addresses__location=self)
+        if schools:
+            schools_str = ' (%s)' % (', '.join([str(s) for s in schools]))
+        else:
+            schools_str = ''
+        return str(self.address) + ' <=> ' + str(self.location) + schools_str
