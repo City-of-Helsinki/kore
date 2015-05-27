@@ -28,6 +28,11 @@ class SchoolTypeNameSerializer(serializers.ModelSerializer):
         model = SchoolTypeName
 
 
+class SchoolTypeNameViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SchoolTypeName.objects.all()
+    serializer_class = SchoolTypeNameSerializer
+
+
 class SchoolTypeSerializer(serializers.ModelSerializer):
     type = SchoolTypeNameSerializer()
 
@@ -39,6 +44,11 @@ class SchoolTypeSerializer(serializers.ModelSerializer):
 class SchoolFieldNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolFieldName
+
+
+class SchoolFieldNameViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SchoolFieldName.objects.all()
+    serializer_class = SchoolFieldNameSerializer
 
 
 class SchoolFieldSerializer(serializers.ModelSerializer):
@@ -220,3 +230,5 @@ class PrincipalViewSet(mixins.RetrieveModelMixin,
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
 router.register(r'principal', PrincipalViewSet)
+router.register(r'school_field', SchoolFieldNameViewSet)
+router.register(r'school_type', SchoolTypeNameViewSet)
