@@ -48,7 +48,8 @@ INSTALLED_APPS = [
 
 if DEBUG:
     # INSTALLED_APPS.insert(0, 'devserver')
-    INSTALLED_APPS.insert(0, 'debug_toolbar')
+    # INSTALLED_APPS.insert(0, 'debug_toolbar')
+    pass
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
