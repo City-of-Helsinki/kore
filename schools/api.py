@@ -1,6 +1,8 @@
 from rest_framework import routers, serializers, viewsets, mixins, filters
 from munigeo.api import GeoModelSerializer
 from .models import *
+import django_filters
+from django import forms
 
 
 class SchoolNameSerializer(serializers.ModelSerializer):
@@ -217,10 +219,68 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
                   'archives')
 
 
+class InclusiveFilter(django_filters.Filter):
+    """
+    Filter for including entries where the field is null
+    """
+
+    def filter(self, qs, value):
+        originalqs = super().filter(qs, value)
+        self.lookup_type = 'isnull'
+        nullqs = super().filter(qs, value)
+        return nullqs | originalqs
+
+
+class InclusiveNumberFilter(InclusiveFilter):
+    field_class = forms.DecimalField
+
+
+class NameOrIdFilter(django_filters.Filter):
+    """
+    Filter that switches search target between name and "id", depending on input
+    """
+    table, underscore, column = "", "", ""
+
+    def filter(self, qs, value):
+        if str(value).isdigit():
+            self.field_class = forms.DecimalField
+            if not self.column:
+                # store table and column name
+                self.table, self.underscore, self.column = self.name.rpartition('__')
+            # overwrite column name with column id
+            self.name = self.table + '__id'
+        else:
+            self.field_class = forms.CharField
+            if self.column:
+                # overwrite column id with column name
+                self.name = self.table + '__' + self.column
+        return super().filter(qs, value)
+
+
+class SchoolFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="names__end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="names__begin_year", lookup_type='lte')
+    type = NameOrIdFilter(name="types__type__name", lookup_type='iexact')
+    field = NameOrIdFilter(name="fields__field__description", lookup_type='iexact')
+    language = NameOrIdFilter(name="languages__language__name", lookup_type='iexact')
+    gender = django_filters.CharFilter(name="genders__gender", lookup_type='iexact')
+
+    class Meta:
+        model = School
+        fields = ['type',
+                  'field',
+                  'language',
+                  'gender',
+                  'from_year',
+                  'until_year']
+
+
 class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
+    filter_class = SchoolFilter
     search_fields = ('names__types__value',
                      'principals__principal__first_name',
                      'principals__principal__surname',
