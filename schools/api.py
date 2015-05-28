@@ -55,8 +55,11 @@ class SchoolTypeSerializer(serializers.ModelSerializer):
 
 
 class SchoolFieldNameSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='description')
+
     class Meta:
         model = SchoolFieldName
+        exclude = ('description',)
 
 
 class SchoolFieldNameViewSet(viewsets.ReadOnlyModelViewSet):
