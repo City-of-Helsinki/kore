@@ -143,7 +143,6 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolBuilding
-        exclude = ('school',)
 
 
 class OwnerFounderSerializer(serializers.ModelSerializer):
@@ -313,14 +312,87 @@ class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
                      'buildings__building__buildingaddress__address__street_name_sv')
 
 
-class PrincipalViewSet(mixins.RetrieveModelMixin,
-                       viewsets.GenericViewSet):
+class NameFilter(django_filters.CharFilter):
     """
-    Listing principals requires you to submit a query parameter for principal name
+    Filter that checks fields 'first_name' and 'surname'
+    """
+
+    def filter(self, qs, value):
+        self.name = 'first_name'
+        first_name_qs = super().filter(qs, value)
+        self.name = 'surname'
+        surname_qs = super().filter(qs, value)
+        return first_name_qs | surname_qs
+
+
+class ObligatoryNameFilter(NameFilter):
+    """
+    Filter that does not allow queries shorter than four characters
+    """
+
+    def filter(self, qs, value):
+        if len(str(value)) < 4:
+            raise ParseError("You must enter at least four characters in ?search=")
+        return super().filter(qs, value)
+
+
+class PrincipalFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="employers__end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
+    # all principals may not be listed
+    search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
+
+    class Meta:
+        model = Principal
+        fields = ['search',
+                  'from_year',
+                  'until_year']
+
+
+class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Please enter principal name in ?search=
     """
 
     queryset = Principal.objects.all()
     serializer_class = PrincipalSerializer
+    filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
+    filter_class = PrincipalFilter
+
+
+class AddressFilter(django_filters.CharFilter):
+    """
+    Filter that checks fields 'street_name_fi' and 'street_name_sv'
+    """
+
+    def filter(self, qs, value):
+        self.name = 'building__buildingaddress__address__street_name_fi'
+        street_name_fi_qs = super().filter(qs, value)
+        self.name = 'building__buildingaddress__address__street_name_sv'
+        street_name_sv_qs = super().filter(qs, value)
+        return street_name_fi_qs | street_name_sv_qs
+
+
+class SchoolBuildingFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
+    search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_type='icontains')
+
+    class Meta:
+        model = SchoolBuilding
+        fields = ['search',
+                  'from_year',
+                  'until_year']
+
+
+class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SchoolBuilding.objects.all()
+    serializer_class = SchoolBuildingSerializer
+    filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
+    filter_class = SchoolBuildingFilter
+
 
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
@@ -328,3 +400,4 @@ router.register(r'principal', PrincipalViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
 router.register(r'language', LanguageViewSet)
+router.register(r'school_building', SchoolBuildingViewSet)
