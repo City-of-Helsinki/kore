@@ -143,7 +143,6 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolBuilding
-        exclude = ('school',)
 
 
 class OwnerFounderSerializer(serializers.ModelSerializer):
@@ -339,8 +338,8 @@ class ObligatoryNameFilter(NameFilter):
 
 class PrincipalFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="employership__end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="employership__begin_year", lookup_type='lte')
+    from_year = InclusiveNumberFilter(name="employers__end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
     # all principals may not be listed
     search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
 
@@ -362,9 +361,43 @@ class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
     filter_class = PrincipalFilter
 
 
+class AddressFilter(django_filters.CharFilter):
+    """
+    Filter that checks fields 'street_name_fi' and 'street_name_sv'
+    """
+
+    def filter(self, qs, value):
+        self.name = 'building__buildingaddress__address__street_name_fi'
+        street_name_fi_qs = super().filter(qs, value)
+        self.name = 'building__buildingaddress__address__street_name_sv'
+        street_name_sv_qs = super().filter(qs, value)
+        return street_name_fi_qs | street_name_sv_qs
+
+
+class SchoolBuildingFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
+    search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_type='icontains')
+
+    class Meta:
+        model = SchoolBuilding
+        fields = ['search',
+                  'from_year',
+                  'until_year']
+
+
+class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SchoolBuilding.objects.all()
+    serializer_class = SchoolBuildingSerializer
+    filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
+    filter_class = SchoolBuildingFilter
+
+
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
 router.register(r'language', LanguageViewSet)
+router.register(r'school_building', SchoolBuildingViewSet)
