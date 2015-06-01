@@ -350,7 +350,12 @@ class PrincipalFilter(django_filters.FilterSet):
                   'until_year']
 
 
-class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
+class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = Principal.objects.all()
+    serializer_class = PrincipalSerializer
+
+
+class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Please enter principal name in ?search=
     """
@@ -396,6 +401,7 @@ class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
 
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
+router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
