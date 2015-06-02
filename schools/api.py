@@ -111,6 +111,43 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
 
 
+class DataTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DataType
+
+
+class ArchiveDataSerializer(serializers.ModelSerializer):
+    data_type = DataTypeSerializer()
+
+    class Meta:
+        model = ArchiveData
+        exclude = ('id',)
+
+
+class OwnerFounderSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(source='type.description')
+
+    class Meta:
+        model = OwnerFounder
+
+
+class SchoolOwnershipSerializer(serializers.ModelSerializer):
+    owner = OwnerFounderSerializer()
+
+    class Meta:
+        model = SchoolOwnership
+        exclude = ('school',)
+
+
+class SchoolFounderSerializer(serializers.ModelSerializer):
+    founder = OwnerFounderSerializer()
+
+    class Meta:
+        model = SchoolFounder
+        exclude = ('school',)
+
+
 class BuildingSerializer(serializers.ModelSerializer):
     neighborhood = serializers.CharField(source='neighborhood.name')
     addresses = AddressSerializer(many=True)
@@ -137,67 +174,61 @@ class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
         exclude = ('school_building',)
 
 
-class SchoolBuildingSerializer(serializers.ModelSerializer):
-    building = BuildingSerializer()
-    photos = SchoolBuildingPhotoSerializer(many=True)
-
-    class Meta:
-        model = SchoolBuilding
-
-
-class OwnerFounderSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(source='type.description')
-
-    class Meta:
-        model = OwnerFounder
-
-
-class SchoolOwnershipSerializer(serializers.ModelSerializer):
-    owner = OwnerFounderSerializer()
-
-    class Meta:
-        model = SchoolOwnership
-        exclude = ('school',)
-
-
-class SchoolFounderSerializer(serializers.ModelSerializer):
-    founder = OwnerFounderSerializer()
-
-    class Meta:
-        model = SchoolFounder
-        exclude = ('school',)
-
-
-class PrincipalSerializer(serializers.ModelSerializer):
+class PrincipalForSchoolSerializer(serializers.ModelSerializer):
+    """
+    This class is needed for the School endpoint
+    """
 
     class Meta:
         model = Principal
-        # finite depth is required to prevent infinite loop
-        depth = 2
-        # fields must be declared here, because Employershipserializer isn't defined yet
-        fields = ('url', 'id', 'surname', 'first_name', 'employers')
+        # fields must be declared here to get both id and url
+        fields = ('url', 'id', 'surname', 'first_name',)
 
 
-class EmployershipSerializer(serializers.ModelSerializer):
-    principal = PrincipalSerializer()
+class EmployershipForSchoolSerializer(serializers.ModelSerializer):
+    principal = PrincipalForSchoolSerializer()
 
     class Meta:
         model = Employership
-        exclude = ('school', 'nimen_id')
+        exclude = ('nimen_id',)
 
 
-class DataTypeSerializer(serializers.ModelSerializer):
+class SchoolForSchoolBuildingSerializer(serializers.ModelSerializer):
+    """
+    This class is needed for the SchoolBuilding endpoint
+    """
+    names = SchoolNameSerializer(many=True)
+    languages = SchoolLanguageSerializer(many=True)
+    types = SchoolTypeSerializer(many=True)
+    fields = SchoolFieldSerializer(many=True)
+    genders = SchoolGenderSerializer(many=True)
+    grade_counts = SchoolNumberOfGradesSerializer(many=True)
+    owners = SchoolOwnershipSerializer(many=True)
+    founders = SchoolFounderSerializer(many=True)
+    principals = EmployershipForSchoolSerializer(many=True)
+    archives = ArchiveDataSerializer(many=True, required=False)
 
     class Meta:
-        model = DataType
+        model = School
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
+                  'grade_counts', 'owners', 'founders', 'principals',
+                  'special_features', 'wartime_school', 'nicknames', 'checked',
+                  'archives')
 
 
-class ArchiveDataSerializer(serializers.ModelSerializer):
-    data_type = DataTypeSerializer()
+class SchoolBuildingSerializer(serializers.ModelSerializer):
+    photos = SchoolBuildingPhotoSerializer(many=True)
+    school = SchoolForSchoolBuildingSerializer()
+    building = BuildingSerializer()
 
     class Meta:
-        model = ArchiveData
-        exclude = ('id',)
+        model = SchoolBuilding
+        depth = 5
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'building', 'photos', 'school', 'approx_begin', 'approx_end',
+                  'begin_day', 'begin_month', 'begin_year', 'end_day', 'end_month', 'end_year',
+                  'ownership', 'reference',)
 
 
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
@@ -210,7 +241,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     buildings = SchoolBuildingSerializer(many=True)
     owners = SchoolOwnershipSerializer(many=True)
     founders = SchoolFounderSerializer(many=True)
-    principals = EmployershipSerializer(many=True)
+    principals = EmployershipForSchoolSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
 
     class Meta:
@@ -220,6 +251,48 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
                   'special_features', 'wartime_school', 'nicknames', 'checked',
                   'archives')
+
+
+class SchoolForPrincipalSerializer(serializers.ModelSerializer):
+    """
+    This class is needed for the Principal endpoint
+    """
+    names = SchoolNameSerializer(many=True)
+    languages = SchoolLanguageSerializer(many=True)
+    types = SchoolTypeSerializer(many=True)
+    fields = SchoolFieldSerializer(many=True)
+    genders = SchoolGenderSerializer(many=True)
+    grade_counts = SchoolNumberOfGradesSerializer(many=True)
+    buildings = SchoolBuildingSerializer(many=True)
+    owners = SchoolOwnershipSerializer(many=True)
+    founders = SchoolFounderSerializer(many=True)
+    archives = ArchiveDataSerializer(many=True, required=False)
+
+    class Meta:
+        model = School
+        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
+                  'grade_counts', 'buildings', 'owners', 'founders',
+                  'special_features', 'wartime_school', 'nicknames', 'checked',
+                  'archives')
+
+
+class EmployershipForPrincipalSerializer(serializers.ModelSerializer):
+    school = SchoolForPrincipalSerializer()
+
+    class Meta:
+        model = Employership
+        exclude = ('nimen_id',)
+
+
+class PrincipalSerializer(serializers.ModelSerializer):
+    employers = EmployershipForPrincipalSerializer(many=True)
+
+    class Meta:
+        model = Principal
+        # depth required to get all related data
+        depth = 5
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'surname', 'first_name', 'employers')
 
 
 class InclusiveFilter(django_filters.Filter):
@@ -305,11 +378,7 @@ class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SchoolSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = SchoolFilter
-    search_fields = ('names__types__value',
-                     'principals__principal__first_name',
-                     'principals__principal__surname',
-                     'buildings__building__buildingaddress__address__street_name_fi',
-                     'buildings__building__buildingaddress__address__street_name_sv')
+    search_fields = ('names__types__value',)
 
 
 class NameFilter(django_filters.CharFilter):
@@ -350,7 +419,12 @@ class PrincipalFilter(django_filters.FilterSet):
                   'until_year']
 
 
-class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
+class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = Principal.objects.all()
+    serializer_class = PrincipalSerializer
+
+
+class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Please enter principal name in ?search=
     """
@@ -396,6 +470,7 @@ class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
 
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
+router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
