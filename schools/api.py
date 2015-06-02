@@ -378,11 +378,7 @@ class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SchoolSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = SchoolFilter
-    search_fields = ('names__types__value',
-                     'principals__principal__first_name',
-                     'principals__principal__surname',
-                     'buildings__building__buildingaddress__address__street_name_fi',
-                     'buildings__building__buildingaddress__address__street_name_sv')
+    search_fields = ('names__types__value',)
 
 
 class NameFilter(django_filters.CharFilter):
