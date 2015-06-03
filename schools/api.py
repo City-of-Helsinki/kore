@@ -118,6 +118,7 @@ class DataTypeSerializer(serializers.ModelSerializer):
 
 
 class ArchiveDataSerializer(serializers.ModelSerializer):
+    url = serializers.URLField(source='link.url')
     data_type = DataTypeSerializer()
 
     class Meta:

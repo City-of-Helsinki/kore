@@ -488,6 +488,14 @@ class SchoolBuildingPhoto(models.Model):
         return str(self.school_building)
 
 
+class ArchiveDataLink(models.Model):
+    archive_data = models.OneToOneField(ArchiveData, related_name='link', db_index=True)
+    url = models.URLField()
+
+    def __str__(self):
+        return str(self.url)
+
+
 class AddressLocation(models.Model):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
     location = models.PointField(srid=4326, null=True, blank=True)
