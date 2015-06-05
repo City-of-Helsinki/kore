@@ -194,44 +194,6 @@ class EmployershipForSchoolSerializer(serializers.ModelSerializer):
         exclude = ('nimen_id',)
 
 
-class SchoolForSchoolBuildingSerializer(serializers.ModelSerializer):
-    """
-    This class is needed for the SchoolBuilding endpoint
-    """
-    names = SchoolNameSerializer(many=True)
-    languages = SchoolLanguageSerializer(many=True)
-    types = SchoolTypeSerializer(many=True)
-    fields = SchoolFieldSerializer(many=True)
-    genders = SchoolGenderSerializer(many=True)
-    grade_counts = SchoolNumberOfGradesSerializer(many=True)
-    owners = SchoolOwnershipSerializer(many=True)
-    founders = SchoolFounderSerializer(many=True)
-    principals = EmployershipForSchoolSerializer(many=True)
-    archives = ArchiveDataSerializer(many=True, required=False)
-
-    class Meta:
-        model = School
-        # fields must be declared to get both id and url
-        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
-                  'grade_counts', 'owners', 'founders', 'principals',
-                  'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives')
-
-
-class SchoolBuildingSerializer(serializers.ModelSerializer):
-    photos = SchoolBuildingPhotoSerializer(many=True)
-    school = SchoolForSchoolBuildingSerializer()
-    building = BuildingSerializer()
-
-    class Meta:
-        model = SchoolBuilding
-        depth = 5
-        # fields must be declared to get both id and url
-        fields = ('url', 'id', 'building', 'photos', 'school', 'approx_begin', 'approx_end',
-                  'begin_day', 'begin_month', 'begin_year', 'end_day', 'end_month', 'end_year',
-                  'ownership', 'reference',)
-
-
 class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
     """
     This class is needed for the School and Principal endpoints
@@ -268,6 +230,20 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
                   'special_features', 'wartime_school', 'nicknames', 'checked',
                   'archives')
+
+
+class SchoolBuildingSerializer(serializers.ModelSerializer):
+    photos = SchoolBuildingPhotoSerializer(many=True)
+    school = SchoolSerializer()
+    building = BuildingSerializer()
+
+    class Meta:
+        model = SchoolBuilding
+        depth = 5
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'building', 'photos', 'school', 'approx_begin', 'approx_end',
+                  'begin_day', 'begin_month', 'begin_year', 'end_day', 'end_month', 'end_year',
+                  'ownership', 'reference',)
 
 
 class SchoolForPrincipalSerializer(serializers.ModelSerializer):
