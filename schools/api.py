@@ -118,6 +118,7 @@ class DataTypeSerializer(serializers.ModelSerializer):
 
 
 class ArchiveDataSerializer(serializers.ModelSerializer):
+    url = serializers.URLField(source='link.url')
     data_type = DataTypeSerializer()
 
     class Meta:
@@ -231,6 +232,22 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
+class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
+    """
+    This class is needed for the School and Principal endpoints
+    """
+    photos = SchoolBuildingPhotoSerializer(many=True)
+    building = BuildingSerializer()
+
+    class Meta:
+        model = SchoolBuilding
+        depth = 5
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'building', 'photos', 'approx_begin', 'approx_end',
+                  'begin_day', 'begin_month', 'begin_year', 'end_day', 'end_month', 'end_year',
+                  'ownership', 'reference',)
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -238,7 +255,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     fields = SchoolFieldSerializer(many=True)
     genders = SchoolGenderSerializer(many=True)
     grade_counts = SchoolNumberOfGradesSerializer(many=True)
-    buildings = SchoolBuildingSerializer(many=True)
+    buildings = SchoolBuildingForSchoolSerializer(many=True)
     owners = SchoolOwnershipSerializer(many=True)
     founders = SchoolFounderSerializer(many=True)
     principals = EmployershipForSchoolSerializer(many=True)
@@ -263,7 +280,7 @@ class SchoolForPrincipalSerializer(serializers.ModelSerializer):
     fields = SchoolFieldSerializer(many=True)
     genders = SchoolGenderSerializer(many=True)
     grade_counts = SchoolNumberOfGradesSerializer(many=True)
-    buildings = SchoolBuildingSerializer(many=True)
+    buildings = SchoolBuildingForSchoolSerializer(many=True)
     owners = SchoolOwnershipSerializer(many=True)
     founders = SchoolFounderSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
