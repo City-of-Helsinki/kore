@@ -398,12 +398,20 @@ class PrincipalFilter(django_filters.FilterSet):
     until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
     # all principals may not be listed
     search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="employers__school__genders__gender", lookup_type='iexact')
 
     class Meta:
         model = Principal
         fields = ['search',
                   'from_year',
-                  'until_year']
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
 
 
 class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -440,12 +448,20 @@ class SchoolBuildingFilter(django_filters.FilterSet):
     from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
     search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
 
     class Meta:
         model = SchoolBuilding
         fields = ['search',
                   'from_year',
-                  'until_year']
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
 
 
 class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
