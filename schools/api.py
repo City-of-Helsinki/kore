@@ -246,31 +246,8 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
-class SchoolForPrincipalSerializer(serializers.ModelSerializer):
-    """
-    This class is needed for the Principal endpoint
-    """
-    names = SchoolNameSerializer(many=True)
-    languages = SchoolLanguageSerializer(many=True)
-    types = SchoolTypeSerializer(many=True)
-    fields = SchoolFieldSerializer(many=True)
-    genders = SchoolGenderSerializer(many=True)
-    grade_counts = SchoolNumberOfGradesSerializer(many=True)
-    buildings = SchoolBuildingForSchoolSerializer(many=True)
-    owners = SchoolOwnershipSerializer(many=True)
-    founders = SchoolFounderSerializer(many=True)
-    archives = ArchiveDataSerializer(many=True, required=False)
-
-    class Meta:
-        model = School
-        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
-                  'grade_counts', 'buildings', 'owners', 'founders',
-                  'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives')
-
-
 class EmployershipForPrincipalSerializer(serializers.ModelSerializer):
-    school = SchoolForPrincipalSerializer()
+    school = SchoolSerializer()
 
     class Meta:
         model = Employership
