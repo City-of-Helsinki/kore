@@ -291,6 +291,15 @@ class PrincipalSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'surname', 'first_name', 'employers')
 
 
+class EmployershipSerializer(serializers.ModelSerializer):
+    principal = PrincipalForSchoolSerializer()
+    school = SchoolSerializer()
+
+    class Meta:
+        model = Employership
+        exclude = ('nimen_id',)
+
+
 class InclusiveFilter(django_filters.Filter):
     """
     Filter for including entries where the field is null
@@ -381,11 +390,19 @@ class NameFilter(django_filters.CharFilter):
     """
     Filter that checks fields 'first_name' and 'surname'
     """
+    table, underscore, column = "", "", ""
 
     def filter(self, qs, value):
-        self.name = 'first_name'
+        self.table, self.underscore, self.column = self.name.rpartition('__')
+        if self.table:
+            self.name = self.table + '__' + 'first_name'
+        else:
+            self.name = 'first_name'
         first_name_qs = super().filter(qs, value)
-        self.name = 'surname'
+        if self.table:
+            self.name = self.table + '__' + 'surname'
+        else:
+            self.name = 'surname'
         surname_qs = super().filter(qs, value)
         return first_name_qs | surname_qs
 
@@ -423,6 +440,28 @@ class PrincipalFilter(django_filters.FilterSet):
                   'school_gender']
 
 
+class EmployershipFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
+    # all principals may not be listed
+    search = ObligatoryNameFilter(name="principal__surname", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
+
+    class Meta:
+        model = Employership
+        fields = ['search',
+                  'from_year',
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
+
+
 class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Principal.objects.all()
     serializer_class = PrincipalSerializer
@@ -437,6 +476,17 @@ class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
+
+
+class EmployershipViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    Please enter principal name in ?search=
+    """
+
+    queryset = Employership.objects.all()
+    serializer_class = EmployershipSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = EmployershipFilter
 
 
 class AddressFilter(django_filters.CharFilter):
@@ -484,6 +534,7 @@ router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
 router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
+router.register(r'employership', EmployershipViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
 router.register(r'language', LanguageViewSet)
