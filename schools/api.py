@@ -225,6 +225,14 @@ class SchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
                   'reference',)
 
 
+class LifecycleEventSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(source='type.description')
+
+    class Meta:
+        model = LifecycleEvent
+        fields = ('description', 'day', 'month', 'year', 'decisionmaker', 'additional_info')
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -237,6 +245,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     founders = SchoolFounderSerializer(many=True)
     principals = EmployershipForSchoolSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
+    lifecycle_event = LifecycleEventSerializer(many=True, required=False)
     continuum_active = SchoolContinuumSerializer(many=True, required=False)
     continuum_target = SchoolContinuumSerializer(many=True, required=False)
 
@@ -246,7 +255,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
                   'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives', 'continuum_active', 'continuum_target')
+                  'archives', 'lifecycle_event', 'continuum_active', 'continuum_target')
 
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):

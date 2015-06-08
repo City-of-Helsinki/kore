@@ -38,7 +38,7 @@ class ArchiveData(models.Model):
 
 
 class LifecycleEvent(models.Model):
-    school = models.ForeignKey('School', db_column='koulun_id')
+    school = models.ForeignKey('School', db_column='koulun_id', related_name='lifecycle_event')
     type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id')
     day = models.IntegerField(blank=True, null=True, db_column='paiva')
     month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
