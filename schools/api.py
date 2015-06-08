@@ -210,6 +210,21 @@ class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
+class SchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
+
+    def to_representation(self, instance):
+        # translate joins and separations to English
+        representation = super().to_representation(instance)
+        representation['description'] = representation['description'].replace(
+            'yhdistyy', 'joins').replace('eroaa', 'separates from')
+        return representation
+
+    class Meta:
+        model = SchoolContinuum
+        fields = ('active_school', 'description', 'target_school', 'day', 'month', 'year',
+                  'reference',)
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -222,6 +237,8 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     founders = SchoolFounderSerializer(many=True)
     principals = EmployershipForSchoolSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
+    continuum_active = SchoolContinuumSerializer(many=True, required=False)
+    continuum_target = SchoolContinuumSerializer(many=True, required=False)
 
     class Meta:
         model = School
@@ -229,7 +246,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
                   'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives')
+                  'archives', 'continuum_active', 'continuum_target')
 
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):
