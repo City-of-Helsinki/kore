@@ -38,7 +38,7 @@ class ArchiveData(models.Model):
 
 
 class LifecycleEvent(models.Model):
-    school = models.ForeignKey('School', db_column='koulun_id')
+    school = models.ForeignKey('School', db_column='koulun_id', related_name='lifecycle_event')
     type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id')
     day = models.IntegerField(blank=True, null=True, db_column='paiva')
     month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
@@ -66,9 +66,9 @@ class LifecycleEventType(models.Model):
 
 
 class SchoolContinuum(models.Model):
-    school_a = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_a')
+    active_school = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_active')
     description = models.CharField(max_length=510, blank=True, db_column='selite')
-    school_b = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_b')
+    target_school = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_target')
     day = models.IntegerField(blank=True, null=True, db_column='paiva')
     month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
     year = models.IntegerField(blank=True, null=True, db_column='vuosi')
@@ -78,6 +78,9 @@ class SchoolContinuum(models.Model):
     class Meta:
         managed = False
         db_table = 'Jatkumo'
+
+    def __str__(self):
+        return str(self.active_school) + ' ' + self.description + ' ' + str(self.target_school)
 
 
 class Neighborhood(models.Model):

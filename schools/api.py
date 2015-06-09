@@ -210,6 +210,29 @@ class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
+class SchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
+
+    def to_representation(self, instance):
+        # translate joins and separations to English
+        representation = super().to_representation(instance)
+        representation['description'] = representation['description'].replace(
+            'yhdistyy', 'joins').replace('eroaa', 'separates from')
+        return representation
+
+    class Meta:
+        model = SchoolContinuum
+        fields = ('active_school', 'description', 'target_school', 'day', 'month', 'year',
+                  'reference',)
+
+
+class LifecycleEventSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(source='type.description')
+
+    class Meta:
+        model = LifecycleEvent
+        fields = ('description', 'day', 'month', 'year', 'decisionmaker', 'additional_info')
+
+
 class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
@@ -222,6 +245,9 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     founders = SchoolFounderSerializer(many=True)
     principals = EmployershipForSchoolSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
+    lifecycle_event = LifecycleEventSerializer(many=True, required=False)
+    continuum_active = SchoolContinuumSerializer(many=True, required=False)
+    continuum_target = SchoolContinuumSerializer(many=True, required=False)
 
     class Meta:
         model = School
@@ -229,7 +255,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
                   'grade_counts', 'buildings', 'owners', 'founders', 'principals',
                   'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives')
+                  'archives', 'lifecycle_event', 'continuum_active', 'continuum_target')
 
 
 class SchoolBuildingSerializer(serializers.ModelSerializer):
@@ -246,31 +272,8 @@ class SchoolBuildingSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
-class SchoolForPrincipalSerializer(serializers.ModelSerializer):
-    """
-    This class is needed for the Principal endpoint
-    """
-    names = SchoolNameSerializer(many=True)
-    languages = SchoolLanguageSerializer(many=True)
-    types = SchoolTypeSerializer(many=True)
-    fields = SchoolFieldSerializer(many=True)
-    genders = SchoolGenderSerializer(many=True)
-    grade_counts = SchoolNumberOfGradesSerializer(many=True)
-    buildings = SchoolBuildingForSchoolSerializer(many=True)
-    owners = SchoolOwnershipSerializer(many=True)
-    founders = SchoolFounderSerializer(many=True)
-    archives = ArchiveDataSerializer(many=True, required=False)
-
-    class Meta:
-        model = School
-        fields = ('url', 'id', 'names', 'languages', 'types', 'fields', 'genders',
-                  'grade_counts', 'buildings', 'owners', 'founders',
-                  'special_features', 'wartime_school', 'nicknames', 'checked',
-                  'archives')
-
-
 class EmployershipForPrincipalSerializer(serializers.ModelSerializer):
-    school = SchoolForPrincipalSerializer()
+    school = SchoolSerializer()
 
     class Meta:
         model = Employership
@@ -286,6 +289,15 @@ class PrincipalSerializer(serializers.ModelSerializer):
         depth = 5
         # fields must be declared to get both id and url
         fields = ('url', 'id', 'surname', 'first_name', 'employers')
+
+
+class EmployershipSerializer(serializers.ModelSerializer):
+    principal = PrincipalForSchoolSerializer()
+    school = SchoolSerializer()
+
+    class Meta:
+        model = Employership
+        exclude = ('nimen_id',)
 
 
 class InclusiveFilter(django_filters.Filter):
@@ -378,11 +390,19 @@ class NameFilter(django_filters.CharFilter):
     """
     Filter that checks fields 'first_name' and 'surname'
     """
+    table, underscore, column = "", "", ""
 
     def filter(self, qs, value):
-        self.name = 'first_name'
+        self.table, self.underscore, self.column = self.name.rpartition('__')
+        if self.table:
+            self.name = self.table + '__' + 'first_name'
+        else:
+            self.name = 'first_name'
         first_name_qs = super().filter(qs, value)
-        self.name = 'surname'
+        if self.table:
+            self.name = self.table + '__' + 'surname'
+        else:
+            self.name = 'surname'
         surname_qs = super().filter(qs, value)
         return first_name_qs | surname_qs
 
@@ -404,12 +424,42 @@ class PrincipalFilter(django_filters.FilterSet):
     until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
     # all principals may not be listed
     search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="employers__school__genders__gender", lookup_type='iexact')
 
     class Meta:
         model = Principal
         fields = ['search',
                   'from_year',
-                  'until_year']
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
+
+
+class EmployershipFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
+    # all principals may not be listed
+    search = ObligatoryNameFilter(name="principal__surname", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
+
+    class Meta:
+        model = Employership
+        fields = ['search',
+                  'from_year',
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
 
 
 class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -426,6 +476,17 @@ class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
+
+
+class EmployershipViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    Please enter principal name in ?search=
+    """
+
+    queryset = Employership.objects.all()
+    serializer_class = EmployershipSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = EmployershipFilter
 
 
 class AddressFilter(django_filters.CharFilter):
@@ -446,12 +507,20 @@ class SchoolBuildingFilter(django_filters.FilterSet):
     from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
     search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
 
     class Meta:
         model = SchoolBuilding
         fields = ['search',
                   'from_year',
-                  'until_year']
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
 
 
 class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -465,6 +534,7 @@ router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
 router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
+router.register(r'employership', EmployershipViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
 router.register(r'language', LanguageViewSet)
