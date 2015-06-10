@@ -149,16 +149,25 @@ class SchoolFounderSerializer(serializers.ModelSerializer):
         exclude = ('school',)
 
 
+class BuildingOwnershipSerializer(serializers.ModelSerializer):
+    owner = OwnerFounderSerializer()
+
+    class Meta:
+        model = BuildingOwnership
+        exclude = ('building',)
+
+
 class BuildingForSchoolSerializer(serializers.ModelSerializer):
     neighborhood = serializers.CharField(source='neighborhood.name')
     addresses = AddressSerializer(many=True)
+    owners = BuildingOwnershipSerializer(many=True)
 
     class Meta:
         model = Building
         # fields must be declared here to get both id and url
         fields = ('url', 'id', 'neighborhood', 'addresses', 'construction_year',
                   'architect', 'architect_firm', 'property_number', 'sliced',
-                  'comment', 'reference', 'approx')
+                  'comment', 'reference', 'approx', 'owners')
 
 
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
