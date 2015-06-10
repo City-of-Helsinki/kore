@@ -149,13 +149,16 @@ class SchoolFounderSerializer(serializers.ModelSerializer):
         exclude = ('school',)
 
 
-class BuildingSerializer(serializers.ModelSerializer):
+class BuildingForSchoolSerializer(serializers.ModelSerializer):
     neighborhood = serializers.CharField(source='neighborhood.name')
     addresses = AddressSerializer(many=True)
 
     class Meta:
         model = Building
-        exclude = ('photo',)
+        # fields must be declared here to get both id and url
+        fields = ('url', 'id', 'neighborhood', 'addresses', 'construction_year',
+                  'architect', 'architect_firm', 'property_number', 'sliced',
+                  'comment', 'reference', 'approx')
 
 
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
@@ -199,7 +202,7 @@ class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
     This class is needed for the School and Principal endpoints
     """
     photos = SchoolBuildingPhotoSerializer(many=True)
-    building = BuildingSerializer()
+    building = BuildingForSchoolSerializer()
 
     class Meta:
         model = SchoolBuilding
@@ -258,10 +261,10 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
                   'archives', 'lifecycle_event', 'continuum_active', 'continuum_target')
 
 
-class SchoolBuildingSerializer(serializers.ModelSerializer):
+class SchoolBuildingSerializer(serializers.HyperlinkedModelSerializer):
     photos = SchoolBuildingPhotoSerializer(many=True)
     school = SchoolSerializer()
-    building = BuildingSerializer()
+    building = BuildingForSchoolSerializer()
 
     class Meta:
         model = SchoolBuilding
@@ -298,6 +301,29 @@ class EmployershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employership
         exclude = ('nimen_id',)
+
+
+class SchoolBuildingForBuildingSerializer(serializers.ModelSerializer):
+    photos = SchoolBuildingPhotoSerializer(many=True)
+    school = SchoolSerializer()
+
+    class Meta:
+        model = SchoolBuilding
+        depth = 5
+        # fields must be declared to get both id and url
+        fields = ('url', 'id', 'photos', 'school', 'approx_begin', 'approx_end',
+                  'begin_day', 'begin_month', 'begin_year', 'end_day', 'end_month', 'end_year',
+                  'ownership', 'reference',)
+
+
+class BuildingSerializer(serializers.ModelSerializer):
+    neighborhood = serializers.CharField(source='neighborhood.name')
+    addresses = AddressSerializer(many=True)
+    schools = SchoolBuildingForBuildingSerializer(many=True)
+
+    class Meta:
+        model = Building
+        exclude = ('photo',)
 
 
 class InclusiveFilter(django_filters.Filter):
@@ -523,11 +549,40 @@ class SchoolBuildingFilter(django_filters.FilterSet):
                   'school_gender']
 
 
+class BuildingFilter(django_filters.FilterSet):
+    # the end year can be null, so we cannot use a default filter
+    from_year = InclusiveNumberFilter(name="schools__end_year", lookup_type='gte')
+    until_year = django_filters.NumberFilter(name="schools__begin_year", lookup_type='lte')
+    search = AddressFilter(name="buildingaddress__address__street_name_fi", lookup_type='icontains')
+    school_type = NameOrIdFilter(name="schools__school__types__type__name", lookup_type='iexact')
+    school_field = NameOrIdFilter(name="schools__school__fields__field__description", lookup_type='iexact')
+    school_language = NameOrIdFilter(name="schools__school__languages__language__name", lookup_type='iexact')
+    school_gender = GenderFilter(name="schools__school__genders__gender", lookup_type='iexact')
+
+    class Meta:
+        model = Building
+        fields = ['search',
+                  'from_year',
+                  'until_year',
+                  'school_type',
+                  'school_field',
+                  'school_language',
+                  'school_gender']
+
+
+
 class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SchoolBuilding.objects.all()
     serializer_class = SchoolBuildingSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = SchoolBuildingFilter
+
+
+class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Building.objects.all()
+    serializer_class = BuildingSerializer
+    filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
+    filter_class = BuildingFilter
 
 
 router = routers.DefaultRouter()
@@ -538,4 +593,5 @@ router.register(r'employership', EmployershipViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
 router.register(r'school_type', SchoolTypeNameViewSet)
 router.register(r'language', LanguageViewSet)
+router.register(r'building', BuildingViewSet)
 router.register(r'school_building', SchoolBuildingViewSet)
