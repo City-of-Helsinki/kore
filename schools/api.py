@@ -222,7 +222,33 @@ class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
-class SchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolforSchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
+    names = SchoolNameSerializer(many=True)
+
+    class Meta:
+        model = School
+        # fields must be declared here to explicitly include id along with url
+        fields = ('url', 'id', 'names')
+
+
+class SchoolContinuumActiveSerializer(serializers.HyperlinkedModelSerializer):
+    target_school = SchoolforSchoolContinuumSerializer()
+
+    def to_representation(self, instance):
+        # translate joins and separations to English
+        representation = super().to_representation(instance)
+        representation['description'] = representation['description'].replace(
+            'yhdistyy', 'joins').replace('eroaa', 'separates from')
+        return representation
+
+    class Meta:
+        model = SchoolContinuum
+        fields = ('active_school', 'description', 'target_school', 'day', 'month', 'year',
+                  'reference',)
+
+
+class SchoolContinuumTargetSerializer(serializers.HyperlinkedModelSerializer):
+    active_school = SchoolforSchoolContinuumSerializer()
 
     def to_representation(self, instance):
         # translate joins and separations to English
@@ -258,8 +284,8 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
     principals = EmployershipForSchoolSerializer(many=True)
     archives = ArchiveDataSerializer(many=True, required=False)
     lifecycle_event = LifecycleEventSerializer(many=True, required=False)
-    continuum_active = SchoolContinuumSerializer(many=True, required=False)
-    continuum_target = SchoolContinuumSerializer(many=True, required=False)
+    continuum_active = SchoolContinuumActiveSerializer(many=True, required=False)
+    continuum_target = SchoolContinuumTargetSerializer(many=True, required=False)
 
     class Meta:
         model = School
@@ -577,7 +603,6 @@ class BuildingFilter(django_filters.FilterSet):
                   'school_field',
                   'school_language',
                   'school_gender']
-
 
 
 class SchoolBuildingViewSet(viewsets.ReadOnlyModelViewSet):
