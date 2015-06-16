@@ -357,8 +357,8 @@ class BuildingName(models.Model):
 
 
 class BuildingOwnership(models.Model):
-    building = models.ForeignKey('Building', db_column='rakennuksen_id')
-    owner_founder = models.ForeignKey(OwnerFounder, db_column='omistaja_perustajan_id')
+    building = models.ForeignKey('Building', db_column='rakennuksen_id', related_name='owners')
+    owner = models.ForeignKey(OwnerFounder, db_column='omistaja_perustajan_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
@@ -387,7 +387,7 @@ class BuildingAddress(models.Model):
 class SchoolBuilding(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     school = models.ForeignKey(School, related_name='buildings', db_column='koulun_id')
-    building = models.ForeignKey('Building', db_column='rakennuksen_id')
+    building = models.ForeignKey('Building', related_name='schools', db_column='rakennuksen_id')
     ownership = models.BooleanField(default=False, db_column='omistus')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
@@ -432,7 +432,6 @@ class Building(models.Model):
     comment = models.CharField(max_length=510, blank=True, db_column='kommentti')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx = models.BooleanField(default=False, db_column='noin')
-
     addresses = models.ManyToManyField(Address, through=BuildingAddress)
 
     def __str__(self):
