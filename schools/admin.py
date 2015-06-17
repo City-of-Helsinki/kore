@@ -2,6 +2,18 @@ from django.contrib import admin
 from django.contrib.gis import admin as geo_admin
 from .models import *
 
+class ArchiveDataLinkInline(admin.TabularInline):
+    model = ArchiveDataLink
+
+
+@admin.register(ArchiveData)
+class ArchiveDataAdmin(admin.ModelAdmin):
+    fields = ('school', 'location')
+    readonly_fields = fields
+    search_fields = ['school__names__types__value', 'location']
+    list_display = ('__str__', 'link')
+    inlines = [ArchiveDataLinkInline]
+
 
 class SchoolBuildingPhotoInline(admin.TabularInline):
     model = SchoolBuildingPhoto
