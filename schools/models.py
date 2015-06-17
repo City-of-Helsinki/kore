@@ -36,6 +36,9 @@ class ArchiveData(models.Model):
         managed = False
         db_table = 'Arkistoaineisto'
 
+    def __str__(self):
+        return str(self.school) + '/' + self.location
+
 
 class LifecycleEvent(models.Model):
     school = models.ForeignKey('School', db_column='koulun_id', related_name='lifecycle_event')

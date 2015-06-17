@@ -3,12 +3,42 @@ from django.contrib.gis import admin as geo_admin
 from .models import *
 
 
+class KoreAdmin(admin.ModelAdmin):
+    """
+    Makes sure the admin cannot delete schools or other kore data
+    """
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def has_add_permission(self, request):
+        return False
+
+
+class ArchiveDataLinkInline(admin.TabularInline):
+    model = ArchiveDataLink
+
+
+@admin.register(ArchiveData)
+class ArchiveDataAdmin(KoreAdmin):
+    fields = ('school', 'location')
+    readonly_fields = fields
+    search_fields = ['school__names__types__value', 'location']
+    list_display = ('__str__', 'link')
+    inlines = [ArchiveDataLinkInline]
+
+
 class SchoolBuildingPhotoInline(admin.TabularInline):
     model = SchoolBuildingPhoto
 
 
 @admin.register(SchoolBuilding)
-class SchoolBuildingAdmin(admin.ModelAdmin):
+class SchoolBuildingAdmin(KoreAdmin):
     fields = ('school', 'building', 'begin_year', 'end_year')
     readonly_fields = fields
     search_fields = ['school__names__types__value']
