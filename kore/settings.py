@@ -37,13 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'raven.contrib.django.raven_compat',
+    'django_extensions',
     'rest_framework',
     'corsheaders',
-    'munigeo',
-    'schools',
     'modeltranslation',
-    'django.contrib.gis'
+    'munigeo',
+    'schools'
 ]
 
 if DEBUG:
