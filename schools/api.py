@@ -44,6 +44,7 @@ class SchoolTypeNameSerializer(serializers.ModelSerializer):
 class SchoolTypeNameViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SchoolTypeName.objects.all()
     serializer_class = SchoolTypeNameSerializer
+    paginate_by = 50
 
 
 class SchoolTypeSerializer(serializers.ModelSerializer):
