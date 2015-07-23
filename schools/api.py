@@ -206,6 +206,19 @@ class EmployershipForSchoolSerializer(serializers.ModelSerializer):
         model = Employership
         exclude = ('nimen_id',)
 
+    def to_representation(self, instance):
+        # censor recent principal names
+        representation = super().to_representation(instance)
+        try:
+            if representation['begin_year'] > 1950:
+                representation['principal']['surname'] = None
+                representation['principal']['first_name'] = None
+        except TypeError:
+            # censor names if year unknown
+            representation['principal']['surname'] = None
+            representation['principal']['first_name'] = None
+        return representation
+
 
 class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
     """
@@ -329,9 +342,25 @@ class PrincipalSerializer(serializers.ModelSerializer):
         # fields must be declared to get both id and url
         fields = ('url', 'id', 'surname', 'first_name', 'employers')
 
+    def to_representation(self, instance):
+        # censor recent principal names
+        representation = super().to_representation(instance)
+        try:
+            if representation['employers'][0]['begin_year'] > 1950:
+                representation['surname'] = None
+                representation['first_name'] = None
+        except TypeError:
+            # censor names if year unknown
+            representation['surname'] = None
+            representation['first_name'] = None
+        except KeyError:
+            # censor names if employer unknown
+            representation['surname'] = None
+            representation['first_name'] = None
+        return representation
 
-class EmployershipSerializer(serializers.ModelSerializer):
-    principal = PrincipalForSchoolSerializer()
+
+class EmployershipSerializer(EmployershipForSchoolSerializer):
     school = SchoolSerializer()
 
     class Meta:
