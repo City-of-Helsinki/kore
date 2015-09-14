@@ -158,19 +158,6 @@ class BuildingOwnershipSerializer(serializers.ModelSerializer):
         exclude = ('building',)
 
 
-class BuildingForSchoolSerializer(serializers.ModelSerializer):
-    neighborhood = serializers.CharField(source='neighborhood.name')
-    addresses = AddressSerializer(many=True)
-    owners = BuildingOwnershipSerializer(many=True)
-
-    class Meta:
-        model = Building
-        # fields must be declared here to get both id and url
-        fields = ('url', 'id', 'neighborhood', 'addresses', 'construction_year',
-                  'architect', 'architect_firm', 'property_number', 'sliced',
-                  'comment', 'reference', 'approx', 'owners')
-
-
 class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
@@ -186,6 +173,23 @@ class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolBuildingPhoto
         exclude = ('school_building',)
+
+
+class BuildingForSchoolSerializer(serializers.ModelSerializer):
+    neighborhood = serializers.CharField(source='neighborhood.name')
+    addresses = AddressSerializer(many=True)
+    owners = BuildingOwnershipSerializer(many=True)
+    photos = serializers.ListField(
+        source='get_photos',
+        child=SchoolBuildingPhotoSerializer()
+    )
+
+    class Meta:
+        model = Building
+        # fields must be declared here to get both id and url
+        fields = ('url', 'id', 'neighborhood', 'addresses', 'construction_year',
+                  'architect', 'architect_firm', 'property_number', 'sliced',
+                  'comment', 'reference', 'approx', 'owners', 'photos')
 
 
 class PrincipalForSchoolSerializer(serializers.ModelSerializer):
