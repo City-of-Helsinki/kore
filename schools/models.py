@@ -449,6 +449,13 @@ class Building(models.Model):
             s += ' (%s)' % names[0].name
         return s
 
+    def get_photos(self):
+        photos = []
+        for school_building in self.schools.all():
+            for photo in school_building.photos.all():
+                photos.append(photo)
+        return photos
+
     class Meta:
         managed = False
         db_table = 'Rakennus'
