@@ -166,8 +166,8 @@ class SchoolBuildingPhotoSerializer(serializers.ModelSerializer):
         representation = super(SchoolBuildingPhotoSerializer, self).to_representation(instance)
         representation['url'] = representation['url'].replace(
             '.finna.fi/Record/',
-            '.finna.fi/thumbnail.php?id='
-        ) + '&size=large'
+            '.finna.fi/Cover/Show?id='
+        ) + '&w=1200&h=1200'
         return representation
 
     class Meta:
