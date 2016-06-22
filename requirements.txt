@@ -1,7 +1,7 @@
 Django<1.8
-djangorestframework
+djangorestframework<3.2.3
 Markdown
-django-filter
+django-filter<0.12
 django-admin-bootstrapped==2.4.0
 psycopg2
 raven
