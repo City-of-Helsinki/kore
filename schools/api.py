@@ -211,16 +211,10 @@ class EmployershipForSchoolSerializer(serializers.ModelSerializer):
         exclude = ('nimen_id',)
 
     def to_representation(self, instance):
-        # censor recent principal names
+        # just censor all the principal names
         representation = super().to_representation(instance)
-        try:
-            if representation['begin_year'] > 1950:
-                representation['principal']['surname'] = None
-                representation['principal']['first_name'] = None
-        except TypeError:
-            # censor names if year unknown
-            representation['principal']['surname'] = None
-            representation['principal']['first_name'] = None
+        representation['principal']['surname'] = None
+        representation['principal']['first_name'] = None
         return representation
 
 
