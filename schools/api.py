@@ -396,7 +396,6 @@ class PrincipalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Principal
-        list_serializer_class = CensoredListSerializer
         # depth required to get all related data
         depth = 5
         # fields must be declared to get both id and url
@@ -408,7 +407,6 @@ class EmployershipSerializer(EmployershipForSchoolSerializer):
 
     class Meta:
         model = Employership
-        list_serializer_class = CensoredListSerializer
         exclude = ('nimen_id',)
 
 
@@ -542,23 +540,11 @@ class NameFilter(django_filters.CharFilter):
         return first_name_qs | surname_qs
 
 
-class ObligatoryNameFilter(NameFilter):
-    """
-    Filter that does not allow queries shorter than four characters
-    """
-
-    def filter(self, qs, value):
-        if len(str(value)) < 4:
-            raise ParseError("You must enter at least four characters in ?search=")
-        return super().filter(qs, value)
-
-
 class PrincipalFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
     from_year = InclusiveNumberFilter(name="employers__end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
-    # all principals may not be listed
-    search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
+    search = NameFilter(name="surname", lookup_type='icontains')
     school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_type='iexact')
     school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_type='iexact')
     school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_type='iexact')
@@ -579,8 +565,7 @@ class EmployershipFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
     from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
-    # all principals may not be listed
-    search = ObligatoryNameFilter(name="principal__surname", lookup_type='icontains')
+    search = NameFilter(name="principal__surname", lookup_type='icontains')
     school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
     school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
     school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
@@ -597,27 +582,14 @@ class EmployershipFilter(django_filters.FilterSet):
                   'school_gender']
 
 
-class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = Principal.objects.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
-    serializer_class = PrincipalSerializer
-
-
-class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    Please enter principal name in ?search=
-    """
-
+class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Principal.objects.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
 
 
-class EmployershipViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    Please enter principal name in ?search=
-    """
-
+class EmployershipViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Employership.objects.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = EmployershipSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -695,7 +667,6 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
 
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
-router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'employership', EmployershipViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
