@@ -1,9 +1,74 @@
-from rest_framework import routers, serializers, viewsets, mixins, filters
+from datetime import datetime
+
+from rest_framework import routers, serializers, viewsets, mixins, filters, relations
 from munigeo.api import GeoModelSerializer
+from rest_framework.serializers import ListSerializer, LIST_SERIALIZER_KWARGS
+
 from .models import *
 import django_filters
 from django import forms
 from rest_framework.exceptions import ParseError
+
+
+YEARS_OF_PRIVACY = 100
+
+# for censoring principals in related instances
+
+class CensoredManyRelatedField(relations.ManyRelatedField):
+    """
+    Handles view permissions for related field listings with Principal or Employership instances.
+    """
+    def to_representation(self, iterable):
+        if iterable.model is Employership:
+            iterable = iterable.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+        if iterable.mode is Principal:
+            iterable.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+        return super().to_representation(iterable)
+
+
+class CensoredListSerializer(serializers.ListSerializer):
+    """
+    Handles view permissions for list serializers with Principal or Employership instances.
+    """
+
+    def to_representation(self, data):
+        """
+        List of object instances -> List of dicts of primitive datatypes.
+        """
+        # Dealing with nested relationships, data can be a Manager,
+        # so, first get a queryset from the Manager if needed
+        iterable = data.all() if isinstance(data, models.Manager) else data
+
+        if iterable.model is Employership:
+            iterable = iterable.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+        if iterable.model is Principal:
+            iterable = iterable.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+        return [
+            self.child.to_representation(item) for item in iterable
+        ]
+
+
+class CensoredHyperlinkedRelatedField(relations.HyperlinkedRelatedField):
+    """
+    Handles view permissions for related field listings with Principal or Employership instances.
+    """
+    @classmethod
+    def many_init(cls, *args, **kwargs):
+        # the correct arguments must be passed on to the parent
+        list_kwargs = {'child_relation': cls(*args, **kwargs)}
+        for key in kwargs.keys():
+            if key in relations.MANY_RELATION_KWARGS:
+                list_kwargs[key] = kwargs[key]
+        return CensoredManyRelatedField(**list_kwargs)
+
+
+class CensoredHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Handles view permissions for related field listings with Principal or Employership instances.
+    """
+    serializer_related_field = CensoredHyperlinkedRelatedField
+
+# the actual serializers
 
 
 class SchoolNameSerializer(serializers.ModelSerializer):
@@ -199,6 +264,7 @@ class PrincipalForSchoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Principal
+        list_serializer_class = CensoredListSerializer
         # fields must be declared here to get both id and url
         fields = ('url', 'id', 'surname', 'first_name',)
 
@@ -208,14 +274,8 @@ class EmployershipForSchoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employership
+        list_serializer_class = CensoredListSerializer
         exclude = ('nimen_id',)
-
-    def to_representation(self, instance):
-        # just censor all the principal names
-        representation = super().to_representation(instance)
-        representation['principal']['surname'] = None
-        representation['principal']['first_name'] = None
-        return representation
 
 
 class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
@@ -234,7 +294,7 @@ class SchoolBuildingForSchoolSerializer(serializers.ModelSerializer):
                   'ownership', 'reference',)
 
 
-class SchoolforSchoolContinuumSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolforSchoolContinuumSerializer(CensoredHyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
 
     class Meta:
@@ -243,7 +303,7 @@ class SchoolforSchoolContinuumSerializer(serializers.HyperlinkedModelSerializer)
         fields = ('url', 'id', 'names')
 
 
-class SchoolContinuumActiveSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolContinuumActiveSerializer(CensoredHyperlinkedModelSerializer):
     target_school = SchoolforSchoolContinuumSerializer()
 
     def to_representation(self, instance):
@@ -259,7 +319,7 @@ class SchoolContinuumActiveSerializer(serializers.HyperlinkedModelSerializer):
                   'reference',)
 
 
-class SchoolContinuumTargetSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolContinuumTargetSerializer(CensoredHyperlinkedModelSerializer):
     active_school = SchoolforSchoolContinuumSerializer()
 
     def to_representation(self, instance):
@@ -283,7 +343,7 @@ class LifecycleEventSerializer(serializers.ModelSerializer):
         fields = ('description', 'day', 'month', 'year', 'decisionmaker', 'additional_info')
 
 
-class SchoolSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolSerializer(CensoredHyperlinkedModelSerializer):
     names = SchoolNameSerializer(many=True)
     languages = SchoolLanguageSerializer(many=True)
     types = SchoolTypeSerializer(many=True)
@@ -308,7 +368,7 @@ class SchoolSerializer(serializers.HyperlinkedModelSerializer):
                   'archives', 'lifecycle_event', 'continuum_active', 'continuum_target')
 
 
-class SchoolBuildingSerializer(serializers.HyperlinkedModelSerializer):
+class SchoolBuildingSerializer(CensoredHyperlinkedModelSerializer):
     photos = SchoolBuildingPhotoSerializer(many=True)
     school = SchoolSerializer()
     building = BuildingForSchoolSerializer()
@@ -327,6 +387,7 @@ class EmployershipForPrincipalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employership
+        list_serializer_class = CensoredListSerializer
         exclude = ('nimen_id',)
 
 
@@ -339,23 +400,6 @@ class PrincipalSerializer(serializers.ModelSerializer):
         depth = 5
         # fields must be declared to get both id and url
         fields = ('url', 'id', 'surname', 'first_name', 'employers')
-
-    def to_representation(self, instance):
-        # censor recent principal names
-        representation = super().to_representation(instance)
-        try:
-            if representation['employers'][0]['begin_year'] > 1950:
-                representation['surname'] = None
-                representation['first_name'] = None
-        except TypeError:
-            # censor names if year unknown
-            representation['surname'] = None
-            representation['first_name'] = None
-        except KeyError:
-            # censor names if employer unknown
-            representation['surname'] = None
-            representation['first_name'] = None
-        return representation
 
 
 class EmployershipSerializer(EmployershipForSchoolSerializer):
@@ -496,23 +540,11 @@ class NameFilter(django_filters.CharFilter):
         return first_name_qs | surname_qs
 
 
-class ObligatoryNameFilter(NameFilter):
-    """
-    Filter that does not allow queries shorter than four characters
-    """
-
-    def filter(self, qs, value):
-        if len(str(value)) < 4:
-            raise ParseError("You must enter at least four characters in ?search=")
-        return super().filter(qs, value)
-
-
 class PrincipalFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
     from_year = InclusiveNumberFilter(name="employers__end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
-    # all principals may not be listed
-    search = ObligatoryNameFilter(name="surname", lookup_type='icontains')
+    search = NameFilter(name="surname", lookup_type='icontains')
     school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_type='iexact')
     school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_type='iexact')
     school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_type='iexact')
@@ -533,8 +565,7 @@ class EmployershipFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
     from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
     until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
-    # all principals may not be listed
-    search = ObligatoryNameFilter(name="principal__surname", lookup_type='icontains')
+    search = NameFilter(name="principal__surname", lookup_type='icontains')
     school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
     school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
     school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
@@ -551,28 +582,15 @@ class EmployershipFilter(django_filters.FilterSet):
                   'school_gender']
 
 
-class SinglePrincipalViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = Principal.objects.all()
-    serializer_class = PrincipalSerializer
-
-
-class PrincipalViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    Please enter principal name in ?search=
-    """
-
-    queryset = Principal.objects.all()
+class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Principal.objects.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
 
 
-class EmployershipViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    Please enter principal name in ?search=
-    """
-
-    queryset = Employership.objects.all()
+class EmployershipViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Employership.objects.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = EmployershipSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = EmployershipFilter
@@ -649,7 +667,6 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
 
 router = routers.DefaultRouter()
 router.register(r'school', SchoolViewSet)
-router.register(r'principal', SinglePrincipalViewSet)
 router.register(r'principal', PrincipalViewSet)
 router.register(r'employership', EmployershipViewSet)
 router.register(r'school_field', SchoolFieldNameViewSet)
