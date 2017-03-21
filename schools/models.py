@@ -17,6 +17,9 @@ class SchoolFieldName(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     description = models.CharField(max_length=510, blank=True, db_column='selite')
 
+    def __str__(self):
+        return str(self.description)
+
     class Meta:
         managed = False
         db_table = 'Ala'
@@ -102,6 +105,9 @@ class Language(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='kielen_nimi')
 
+    def __str__(self):
+        return str(self.name)
+
     class Meta:
         managed = False
         db_table = 'Kieli'
@@ -141,6 +147,9 @@ class SchoolField(models.Model):
     approx_end = models.BooleanField(default=False, db_column='noin_p')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
 
+    def __str__(self):
+        return str(self.field)
+
     class Meta:
         managed = False
         db_table = 'Koulun_ala'
@@ -154,6 +163,9 @@ class SchoolLanguage(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
+
+    def __str__(self):
+        return str(self.language)
 
     class Meta:
         managed = False
@@ -173,6 +185,9 @@ class SchoolType(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
+
+    def __str__(self):
+        return str(self.type)
 
     class Meta:
         managed = False
@@ -230,6 +245,9 @@ class SchoolTypeName(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='selite')
     description = models.CharField(db_column='mit\xe4_se_tarkoittaa', max_length=510, blank=True)
+
+    def __str__(self):
+        return str(self.name)
 
     class Meta:
         managed = False
@@ -292,6 +310,9 @@ class SchoolName(models.Model):
             return [{'type': x.type, 'value': x.value} for x in other_names]
         else:
             return None
+
+    def __str__(self):
+        return self.get_official_name()
 
     class Meta:
         managed = False
@@ -466,6 +487,9 @@ class Principal(models.Model):
     surname = models.CharField(max_length=510, blank=True, db_column='sukunimi')
     first_name = models.CharField(max_length=510, blank=True, db_column='etunimi')
 
+    def __str__(self):
+        return str(self.surname) + ', ' + str(self.first_name)
+
     class Meta:
         managed = False
         db_table = 'Rehtori'
@@ -485,6 +509,9 @@ class Employership(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
+
+    def __str__(self):
+        return str(self.principal) + ' - ' + str(self.school)
 
     class Meta:
         managed = False

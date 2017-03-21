@@ -1,8 +1,9 @@
-Django<1.8
+Django==1.9
 djangorestframework<3.2.3
 Markdown
 django-filter<0.12
-django-admin-bootstrapped==2.4.0
+django-grappelli
+django-nested-admin
 psycopg2
 raven
 django-extensions

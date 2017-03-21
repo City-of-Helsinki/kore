@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.gis import admin as geo_admin
+import nested_admin
 from .models import *
 
 
-class KoreAdmin(admin.ModelAdmin):
+class KoreAdmin(nested_admin.NestedModelAdmin):
     """
     Makes sure the admin cannot delete schools or other kore data
     """
@@ -18,6 +19,46 @@ class KoreAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+class SchoolNameInline(nested_admin.NestedTabularInline):
+    model = SchoolName
+    extra = 1
+    exclude = ('id', 'reference', 'approx_begin', 'approx_end')
+
+
+class SchoolFieldInline(nested_admin.NestedTabularInline):
+    model = SchoolField
+    fk_name = 'school'
+    extra = 1
+    exclude = ('id', 'name_id')
+
+
+class SchoolLanguageInline(nested_admin.NestedTabularInline):
+    model = SchoolLanguage
+    extra = 1
+
+
+class SchoolTypeInline(nested_admin.NestedTabularInline):
+    model = SchoolType
+    fk_name = 'school'
+    extra = 1
+    exclude = ('main_school', 'reference', 'approx_begin', 'approx_end')
+
+
+class EmployershipInline(nested_admin.NestedTabularInline):
+    model = Employership
+    extra = 1
+    exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
+
+
+@admin.register(School)
+class SchoolAdmin(KoreAdmin):
+    exclude = ('id', 'special_features', 'wartime_school', 'checked')
+    list_display = ('__str__',)
+    inlines = [SchoolNameInline,
+               SchoolTypeInline,
+               EmployershipInline]
 
 
 class ArchiveDataLinkInline(admin.TabularInline):
