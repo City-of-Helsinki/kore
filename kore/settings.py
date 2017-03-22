@@ -118,6 +118,7 @@ LANGUAGES = (
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "var", "static")
+LOCALE_PATH = os.path.join(BASE_DIR, "schools", "locale")
 
 REST_FRAMEWORK = {
     'PAGINATE_BY': 20,                 # Default to 10

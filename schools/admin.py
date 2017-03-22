@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.gis import admin as geo_admin
 import nested_admin
 from .models import *
+from django.utils.translation import ugettext_lazy as _
 
 
 class KoreAdmin(nested_admin.NestedModelAdmin):
@@ -33,11 +34,14 @@ class SchoolNameInline(nested_admin.NestedTabularInline):
     exclude = ('id', 'reference', 'approx_begin', 'approx_end')
     inlines = [NameTypeInline]
     ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
 
 
 class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
     model = SchoolContinuum
     fk_name = 'active_school'
+    verbose_name = _("Action targeting another school")
+    verbose_name_plural = _("Actions targeting another school")
     extra = 0
     exclude = ('approx',)
     raw_id_fields = ('target_school',)
@@ -45,11 +49,14 @@ class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
         'fk': ['target_school'],
     }
     ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
 
 
 class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
     model = SchoolContinuum
     fk_name = 'target_school'
+    verbose_name = _("Action targeting this school")
+    verbose_name_plural = _("Actions targeting this school")
     extra = 0
     exclude = ('approx',)
     raw_id_fields = ('active_school',)
@@ -57,13 +64,15 @@ class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
         'fk': ['active_school'],
     }
     ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
 
 
 class LifeCycleEventInline(nested_admin.NestedTabularInline):
     model = LifecycleEvent
     extra = 0
-    exclude = ('approx',)
+    exclude = ('approx', 'decisionmaker', 'decision_day', 'decision_month', 'decision_year', 'additional_info', 'reference')
     ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
 
 
 class SchoolFieldInline(nested_admin.NestedTabularInline):
@@ -84,6 +93,7 @@ class SchoolTypeInline(nested_admin.NestedTabularInline):
     extra = 0
     exclude = ('main_school', 'reference', 'approx_begin', 'approx_end')
     ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
 
 
 class EmployershipInline(nested_admin.NestedTabularInline):
@@ -95,6 +105,7 @@ class EmployershipInline(nested_admin.NestedTabularInline):
         'fk': ['principal'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
 
 
 class SchoolBuildingInline(nested_admin.NestedTabularInline):
@@ -106,6 +117,7 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
         'fk': ['building'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
 
 
 @admin.register(School)
@@ -128,7 +140,7 @@ class BuildingAddressInline(nested_admin.NestedTabularInline):
 
 @admin.register(Building)
 class BuildingAdmin(KoreAdmin):
-    exclude = ('id', 'approx',)
+    exclude = ('id', 'approx', 'comment', 'reference')
     list_display = ('__str__',)
     inlines = [BuildingAddressInline]
 

@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
 from munigeo.models import Address as Location
+from django.utils.translation import ugettext_lazy as _
 
 
 class IncrementalIDKoreModel(models.Model):
@@ -48,13 +49,15 @@ class ArchiveData(IncrementalIDKoreModel):
     name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
     data_type = models.ForeignKey(DataType, blank=True, null=True, db_column='aineistotyypin_id')
     location = models.CharField(max_length=510, blank=True, db_column='sijainti')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     arkiston_nimi = models.CharField(max_length=510, blank=True, db_column='arkiston_nimi')
 
     class Meta:
         managed = False
         db_table = 'Arkistoaineisto'
+        verbose_name = _('archive data')
+        verbose_name_plural = _('archive datas')
 
     def __str__(self):
         return str(self.school) + '/' + self.location
@@ -62,21 +65,23 @@ class ArchiveData(IncrementalIDKoreModel):
 
 class LifecycleEvent(models.Model):
     school = models.ForeignKey('School', db_column='koulun_id', related_name='lifecycle_event')
-    type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id')
-    day = models.IntegerField(blank=True, null=True, db_column='paiva')
-    month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
-    year = models.IntegerField(db_column='vuosi')
-    decisionmaker = models.CharField(max_length=510, blank=True, db_column='paatoksen_tekija')
-    decision_day = models.IntegerField(blank=True, null=True, db_column='paatoksen_paiva')
-    decision_month = models.IntegerField(blank=True, null=True, db_column='paatoksen_kuukausi')
-    decision_year = models.IntegerField(blank=True, null=True, db_column='paatoksen_vuosi')
-    additional_info = models.CharField(db_column='lis\xe4tietoja', max_length=510, blank=True)
-    reference = models.CharField(max_length=510, blank=True, db_column='viite')
+    type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id', verbose_name=_('type'))
+    day = models.IntegerField(blank=True, null=True, db_column='paiva', verbose_name=_('day'))
+    month = models.IntegerField(blank=True, null=True, db_column='kuukausi', verbose_name=_('month'))
+    year = models.IntegerField(db_column='vuosi', verbose_name=_('year'))
+    decisionmaker = models.CharField(max_length=510, blank=True, db_column='paatoksen_tekija', verbose_name=_('decisionmaker'))
+    decision_day = models.IntegerField(blank=True, null=True, db_column='paatoksen_paiva', verbose_name=_('decision day'))
+    decision_month = models.IntegerField(blank=True, null=True, db_column='paatoksen_kuukausi', verbose_name=_('decision month'))
+    decision_year = models.IntegerField(blank=True, null=True, db_column='paatoksen_vuosi', verbose_name=_('decision year'))
+    additional_info = models.CharField(db_column='lis\xe4tietoja', max_length=510, blank=True, verbose_name=_('additional info'))
+    reference = models.CharField(max_length=510, blank=True, db_column='viite', verbose_name=_('reference'))
     approx = models.BooleanField(default=False, db_column='noin')
 
     class Meta:
         managed = False
         db_table = 'Elinkaaritapahtuma'
+        verbose_name = _('lifecycle event')
+        verbose_name_plural = _('lifecycle events')
 
 
 class LifecycleEventType(models.Model):
@@ -92,22 +97,23 @@ class LifecycleEventType(models.Model):
 
 
 class SchoolContinuum(models.Model):
-    active_school = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_active')
-    description = models.CharField(max_length=510, blank=True, db_column='selite')
-    target_school = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_target')
-    day = models.IntegerField(blank=True, null=True, db_column='paiva')
-    month = models.IntegerField(blank=True, null=True, db_column='kuukausi')
-    year = models.IntegerField(blank=True, null=True, db_column='vuosi')
-    reference = models.CharField(max_length=510, blank=True, db_column='viite')
+    active_school = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_active', verbose_name=_('active school'))
+    description = models.CharField(max_length=510, blank=True, db_column='selite', verbose_name=_('description'))
+    target_school = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_target', verbose_name=_('target school'))
+    day = models.IntegerField(blank=True, null=True, db_column='paiva', verbose_name=_('day'))
+    month = models.IntegerField(blank=True, null=True, db_column='kuukausi', verbose_name=_('month'))
+    year = models.IntegerField(blank=True, null=True, db_column='vuosi', verbose_name=_('year'))
+    reference = models.CharField(max_length=510, blank=True, db_column='viite', verbose_name=_('reference'))
     approx = models.BooleanField(default=False, db_column='noin')
 
     class Meta:
         managed = False
         db_table = 'Jatkumo'
+        verbose_name = _('continuum event')
+        verbose_name_plural = _('continuum events')
 
     def __str__(self):
         return str(self.active_school) + ' ' + self.description + ' ' + str(self.target_school)
-
 
 class Neighborhood(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
@@ -140,7 +146,7 @@ class School(IncrementalIDKoreModel):
     id = models.AutoField(db_column='ID', primary_key=True)
     special_features = models.TextField(blank=True, db_column='erityispiirteet')
     wartime_school = models.BooleanField(default=False, db_column='sota_ajan_koulu')
-    nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet')
+    nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet', verbose_name=_('nicknames'))
     checked = models.BooleanField(default=False, db_column='tarkastettu')
 
     def __str__(self):
@@ -158,19 +164,21 @@ class School(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Koulu'
+        verbose_name = _('school')
+        verbose_name_plural = _('schools')
 
 
 class SchoolField(models.Model):
     school = models.ForeignKey(School, db_column='koulun_id', related_name='fields')
     field = models.ForeignKey(SchoolFieldName, db_column='alan_id')
     main_school = models.ForeignKey(School, db_column='paakoulun_id', related_name='fields_main')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     approx_end = models.BooleanField(default=False, db_column='noin_p')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
 
@@ -191,8 +199,8 @@ class SchoolField(models.Model):
 class SchoolLanguage(models.Model):
     school = models.ForeignKey(School, related_name='languages', db_column='koulun_id')
     language = models.ForeignKey(Language, db_column='kielen_id')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -207,14 +215,14 @@ class SchoolLanguage(models.Model):
 
 class SchoolType(models.Model):
     school = models.ForeignKey(School, db_column='koulun_id', related_name='types')
-    type = models.ForeignKey('SchoolTypeName', db_column='koulutyypin_id')
+    type = models.ForeignKey('SchoolTypeName', db_column='koulutyypin_id', verbose_name=_('type'))
     main_school = models.ForeignKey(School, db_column='paakoulun_id', related_name='main_types')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -231,17 +239,19 @@ class SchoolType(models.Model):
     class Meta:
         managed = False
         db_table = 'Koulun_laatu'
+        verbose_name = _('school type')
+        verbose_name_plural = _('school types')
 
 
 class SchoolOwnership(models.Model):
     school = models.ForeignKey(School, related_name='owners', db_column='koulun_id')
     owner = models.ForeignKey('OwnerFounder', db_column='omistaja_perustajan_id')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -265,12 +275,12 @@ class SchoolGender(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, related_name='genders', blank=True, null=True, db_column='koulun_id')
     gender = models.CharField(max_length=510, blank=True, db_column='sukupuoli')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -297,12 +307,12 @@ class NumberOfGrades(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, related_name='grade_counts', blank=True, null=True, db_column='koulun_id')
     number = models.IntegerField(blank=True, null=True, db_column='lukumaara')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -315,8 +325,8 @@ class NumberOfGrades(models.Model):
 class NameType(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.ForeignKey('SchoolName', blank=True, null=True, related_name='types', db_column='nimen_id')
-    type = models.CharField(max_length=510, blank=True, db_column='nimen_tyyppi', default='virallinen nimi')
-    value = models.CharField(max_length=510, blank=True, db_column='nimi')
+    type = models.CharField(max_length=510, blank=True, db_column='nimen_tyyppi', default='virallinen nimi', verbose_name=_('name type'))
+    value = models.CharField(max_length=510, blank=True, db_column='nimi', verbose_name=_('name'))
 
     def __str__(self):
         return str(self.value)
@@ -324,17 +334,19 @@ class NameType(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Nimen_tyyppi'
+        verbose_name = _('name type')
+        verbose_name_plural = _('name types')
 
 
 class SchoolName(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, blank=True, null=True, related_name='names', db_column='koulun_id')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -359,6 +371,8 @@ class SchoolName(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Nimi'
+        verbose_name = _('school name')
+        verbose_name_plural = _('school names')
 
 
 class OwnerFounder(models.Model):
@@ -388,12 +402,12 @@ class Address(IncrementalIDKoreModel):
     zip_code = models.CharField(max_length=510, blank=True, db_column='postitoimipaikka')
     municipality_fi = models.CharField(max_length=510, blank=True, db_column='kunnan_nimi_suomeksi')
     municipality_sv = models.CharField(max_length=510, blank=True, db_column='kunnan_nimi_ruotsiksi')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     comment = models.CharField(max_length=510, blank=True, db_column='kommentti')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -401,6 +415,8 @@ class Address(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Osoite'
+        verbose_name = _('address')
+        verbose_name_plural = _('addresses')
 
     def __str__(self):
         return str(self.street_name_fi) + ', ' + str(self.municipality_fi) + ' (' + \
@@ -411,8 +427,8 @@ class BuildingName(IncrementalIDKoreModel):
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
     building = models.ForeignKey('Building', blank=True, null=True, db_column='rakennuksen_id',
                                  related_name='names')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -425,12 +441,12 @@ class BuildingName(IncrementalIDKoreModel):
 class BuildingOwnership(models.Model):
     building = models.ForeignKey('Building', db_column='rakennuksen_id', related_name='owners')
     owner = models.ForeignKey(OwnerFounder, db_column='omistaja_perustajan_id')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -441,26 +457,28 @@ class BuildingOwnership(models.Model):
 
 
 class BuildingAddress(models.Model):
-    building = models.ForeignKey('Building', db_column='rakennuksen_id')
+    building = models.ForeignKey('Building', db_column='rakennuksen_id', verbose_name=_('building'))
     address = models.ForeignKey(Address, db_column='osoitteen_id',
-                                related_name='buildings')
+                                related_name='buildings', verbose_name=_('address'))
 
     class Meta:
         managed = False
         db_table = 'Rakennuksen_osoite'
+        verbose_name = _('building address')
+        verbose_name_plural = _('building addresses')
 
 
 class SchoolBuilding(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     school = models.ForeignKey(School, related_name='buildings', db_column='koulun_id')
-    building = models.ForeignKey('Building', related_name='schools', db_column='rakennuksen_id')
+    building = models.ForeignKey('Building', related_name='schools', db_column='rakennuksen_id', verbose_name=_('building'))
     ownership = models.BooleanField(default=False, db_column='omistus')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -489,17 +507,19 @@ class SchoolBuilding(models.Model):
         managed = False
         db_table = 'Rakennuksen_status'
         ordering = ['school']
+        verbose_name = _('school building')
+        verbose_name_plural = _('school buildings')
 
 
 class Building(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
-    neighborhood = models.ForeignKey(Neighborhood, blank=True, null=True, db_column='kaupunginosan_id')
-    construction_year = models.IntegerField(blank=True, null=True, db_column='rakennusvuosi')
-    architect = models.CharField(max_length=510, blank=True, db_column='arkkitehti')
-    architect_firm = models.CharField(max_length=510, blank=True, db_column='arkkitehtitoimisto')
-    property_number = models.CharField(max_length=510, blank=True, db_column='kiinteistonumero')
+    neighborhood = models.ForeignKey(Neighborhood, blank=True, null=True, db_column='kaupunginosan_id', verbose_name=_('neighborhood'))
+    construction_year = models.IntegerField(blank=True, null=True, db_column='rakennusvuosi', verbose_name=_('construction year'))
+    architect = models.CharField(max_length=510, blank=True, db_column='arkkitehti', verbose_name=_('architect'))
+    architect_firm = models.CharField(max_length=510, blank=True, db_column='arkkitehtitoimisto', verbose_name=_('architect firm'))
+    property_number = models.CharField(max_length=510, blank=True, db_column='kiinteistonumero', verbose_name=_('property number'))
     photo = models.BinaryField(blank=True, null=True, db_column='kuva')
-    sliced = models.BooleanField(default=False, db_column='viipalerakennus')
+    sliced = models.BooleanField(default=False, db_column='viipalerakennus', verbose_name=_('sliced'))
     comment = models.CharField(max_length=510, blank=True, db_column='kommentti')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx = models.BooleanField(default=False, db_column='noin')
@@ -531,6 +551,8 @@ class Building(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Rakennus'
+        verbose_name = _('building')
+        verbose_name_plural = _('buildings')
 
 
 class Principal(IncrementalIDKoreModel):
@@ -548,19 +570,21 @@ class Principal(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Rehtori'
+        verbose_name = _('principal')
+        verbose_name_plural = _('principals')
 
 
 class Employership(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id')
     nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
-    principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id')
-    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
-    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi')
-    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi')
-    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva')
-    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi')
-    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi')
+    principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id', verbose_name=_('principal'))
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
@@ -571,6 +595,8 @@ class Employership(IncrementalIDKoreModel):
     class Meta:
         managed = False
         db_table = 'Tyosuhde'
+        verbose_name = _('employership')
+        verbose_name_plural = _('employerships')
 
 
 class SchoolBuildingPhoto(models.Model):
@@ -588,6 +614,10 @@ class ArchiveDataLink(models.Model):
 
     def __str__(self):
         return str(self.url)
+
+    class Meta:
+        verbose_name = _('archive data link')
+        verbose_name_plural = _('archive data link')
 
 
 class AddressLocation(models.Model):
@@ -608,3 +638,7 @@ class AddressLocation(models.Model):
         else:
             schools_str = ''
         return str(self.address) + ' <=> ' + str(self.location) + schools_str
+
+    class Meta:
+        verbose_name = _('address location')
+        verbose_name_plural = _('address locations')
