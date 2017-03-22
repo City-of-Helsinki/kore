@@ -43,7 +43,7 @@ class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
     verbose_name = _("Action targeting another school")
     verbose_name_plural = _("Actions targeting another school")
     extra = 0
-    exclude = ('approx',)
+    exclude = ('approx', 'reference')
     raw_id_fields = ('target_school',)
     autocomplete_lookup_fields = {
         'fk': ['target_school'],
@@ -58,7 +58,7 @@ class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
     verbose_name = _("Action targeting this school")
     verbose_name_plural = _("Actions targeting this school")
     extra = 0
-    exclude = ('approx',)
+    exclude = ('approx', 'reference')
     raw_id_fields = ('active_school',)
     autocomplete_lookup_fields = {
         'fk': ['active_school'],
