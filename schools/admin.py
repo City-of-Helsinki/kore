@@ -133,9 +133,9 @@ class EmployershipInline(nested_admin.NestedTabularInline):
     model = Employership
     extra = 0
     exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
-    raw_id_fields = ('principal',)
+    raw_id_fields = ('principal', 'school')
     autocomplete_lookup_fields = {
-        'fk': ['principal'],
+        'fk': ['principal', 'school'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
     classes = ('grp-collapse grp-open',)
@@ -171,6 +171,10 @@ class SchoolAdmin(KoreAdmin):
 class BuildingAddressInline(nested_admin.NestedTabularInline):
     model = BuildingAddress
     extra = 0
+    raw_id_fields = ('address',)
+    autocomplete_lookup_fields = {
+        'fk': ['address'],
+    }
 
 
 @admin.register(Building)

@@ -419,9 +419,14 @@ class Address(IncrementalIDKoreModel):
         verbose_name = _('address')
         verbose_name_plural = _('addresses')
 
+    @staticmethod
+    def autocomplete_search_fields():
+        return ("street_name_fi__icontains",)
+
     def __str__(self):
         return str(self.street_name_fi) + ', ' + str(self.municipality_fi) + ' (' + \
                str(self.begin_year) + '-' + (str(self.end_year) if self.end_year else '') + ')'
+
 
 class BuildingName(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
