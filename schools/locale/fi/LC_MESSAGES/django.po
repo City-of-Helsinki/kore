@@ -80,7 +80,7 @@ msgstr "elinkaaritapahtumat"
 
 #: models.py:98
 msgid "active school"
-msgstr "aktiivinen koulu"
+msgstr "toinen koulu"
 
 #: models.py:99
 msgid "description"
@@ -295,13 +295,13 @@ msgid "street name fi"
 msgstr "katuosoite suomeksi"
 
 #: admin.py:26
+msgid "contemporary or historical"
+msgstr "nykyiset vai historialliset"
+
+#: admin.py:30
 msgid "contemporary"
-msgstr "tämänhetkiset"
+msgstr "nykyiset"
 
 #: admin.py:30
-msgid "yes"
-msgstr "kyllä"
-
-#: admin.py:30
-msgid "no"
-msgstr "ei"
+msgid "historical"
+msgstr "historialliset"

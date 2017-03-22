@@ -24,11 +24,11 @@ class KoreAdmin(nested_admin.NestedModelAdmin):
 
 
 class ContemporaryFilter(admin.SimpleListFilter):
-    title = _('contemporary')
+    title = _('contemporary or historical')
     parameter_name = 'is_contemporary'
 
     def lookups(self, request, model_admin):
-        return (('1', _('yes')), ('0', _('no')))
+        return (('1', _('contemporary')), ('0', _('historical')))
 
     def queryset(self, request, queryset):
         if self.value() == '1':
@@ -53,6 +53,15 @@ class ContemporarySchoolFilter(ContemporaryFilter):
             return queryset.filter(names__end_year__isnull=True)
         else:
             return queryset.filter(names__end_year__isnull=False)
+
+
+class ContemporaryBuildingFilter(ContemporaryFilter):
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.filter(schools__end_year__isnull=True)
+        else:
+            return queryset.filter(schools__end_year__isnull=False)
 
 
 class NameTypeInline(nested_admin.NestedStackedInline):
@@ -146,9 +155,9 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
     model = SchoolBuilding
     extra = 0
     exclude = ('id', 'ownership', 'reference', 'approx_begin', 'approx_end')
-    raw_id_fields = ('building',)
+    raw_id_fields = ('building', 'school')
     autocomplete_lookup_fields = {
-        'fk': ['building'],
+        'fk': ['building', 'school'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
     classes = ('grp-collapse grp-open',)
@@ -167,6 +176,7 @@ class SchoolAdmin(KoreAdmin):
                SchoolBuildingInline,
                SchoolTypeInline,
                EmployershipInline]
+    ordering = ('-names__begin_year',)
 
 
 class BuildingAddressInline(nested_admin.NestedTabularInline):
@@ -183,7 +193,10 @@ class BuildingAdmin(KoreAdmin):
     exclude = ('id', 'approx', 'comment', 'reference')
     search_fields = ['addresses__street_name_fi']
     list_display = ('__str__',)
-    inlines = [BuildingAddressInline]
+    list_filter = (ContemporaryBuildingFilter,)
+    inlines = [BuildingAddressInline,
+               SchoolBuildingInline]
+    ordering = ('-construction_year',)
 
 
 @admin.register(Principal)
@@ -193,6 +206,7 @@ class PrincipalAdmin(KoreAdmin):
     list_display = ('__str__',)
     list_filter = (ContemporaryPrincipalFilter,)
     inlines = [EmployershipInline]
+    ordering = ('-employers__begin_year',)
 
 
 class ArchiveDataLinkInline(admin.TabularInline):
