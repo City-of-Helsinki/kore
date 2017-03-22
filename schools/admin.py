@@ -32,6 +32,7 @@ class SchoolNameInline(nested_admin.NestedTabularInline):
     extra = 0
     exclude = ('id', 'reference', 'approx_begin', 'approx_end')
     inlines = [NameTypeInline]
+    ordering = ('begin_year', 'begin_month', 'begin_day')
 
 
 class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
@@ -43,6 +44,7 @@ class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
     autocomplete_lookup_fields = {
         'fk': ['target_school'],
     }
+    ordering = ('year', 'month', 'day')
 
 
 class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
@@ -54,12 +56,14 @@ class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
     autocomplete_lookup_fields = {
         'fk': ['active_school'],
     }
+    ordering = ('year', 'month', 'day')
 
 
 class LifeCycleEventInline(nested_admin.NestedTabularInline):
     model = LifecycleEvent
     extra = 0
     exclude = ('approx',)
+    ordering = ('year', 'month', 'day')
 
 
 class SchoolFieldInline(nested_admin.NestedTabularInline):
@@ -79,6 +83,7 @@ class SchoolTypeInline(nested_admin.NestedTabularInline):
     fk_name = 'school'
     extra = 0
     exclude = ('main_school', 'reference', 'approx_begin', 'approx_end')
+    ordering = ('begin_year', 'begin_month', 'begin_day')
 
 
 class EmployershipInline(nested_admin.NestedTabularInline):
@@ -89,6 +94,7 @@ class EmployershipInline(nested_admin.NestedTabularInline):
     autocomplete_lookup_fields = {
         'fk': ['principal'],
     }
+    ordering = ('begin_year', 'begin_month', 'begin_day')
 
 
 class SchoolBuildingInline(nested_admin.NestedTabularInline):
@@ -99,6 +105,7 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
     autocomplete_lookup_fields = {
         'fk': ['building'],
     }
+    ordering = ('begin_year', 'begin_month', 'begin_day')
 
 
 @admin.register(School)
