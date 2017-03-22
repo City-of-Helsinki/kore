@@ -160,11 +160,11 @@ msgstr "rakennus"
 
 #: models.py:504
 msgid "school building"
-msgstr "koulun rakennus"
+msgstr "koulurakennus"
 
 #: models.py:505
 msgid "school buildings"
-msgstr "koulun rakennukset"
+msgstr "koulurakennukset"
 
 #: models.py:565 models.py:571
 msgid "principal"
@@ -269,3 +269,39 @@ msgstr "linkit arkistoaineistoon"
 #: models.py:329
 msgid "name"
 msgstr "nimi"
+
+#: models.py:51
+msgid "location"
+msgstr "sijainti"
+
+#: models.py:606
+msgid "Is this a picture of the building front?"
+msgstr "Onko kuva koulun etupuolelta?"
+
+#: models.py:612
+msgid "school building photo"
+msgstr "koulurakennuksen kuva"
+
+#: models.py:613
+msgid "school building photos"
+msgstr "koulurakennuksen kuvat"
+
+#: models.py:607
+msgid "is_front"
+msgstr "julkisivukuva"
+
+#: models.py:401
+msgid "street name fi"
+msgstr "katuosoite suomeksi"
+
+#: admin.py:26
+msgid "contemporary"
+msgstr "tämänhetkiset"
+
+#: admin.py:30
+msgid "yes"
+msgstr "kyllä"
+
+#: admin.py:30
+msgid "no"
+msgstr "ei"

@@ -48,7 +48,7 @@ class ArchiveData(IncrementalIDKoreModel):
     school = models.ForeignKey('School', null=True, db_column='koulun_id', related_name='archives')
     name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
     data_type = models.ForeignKey(DataType, blank=True, null=True, db_column='aineistotyypin_id')
-    location = models.CharField(max_length=510, blank=True, db_column='sijainti')
+    location = models.CharField(max_length=510, blank=True, db_column='sijainti', verbose_name=_('location'))
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
     end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     arkiston_nimi = models.CharField(max_length=510, blank=True, db_column='arkiston_nimi')
@@ -60,7 +60,8 @@ class ArchiveData(IncrementalIDKoreModel):
         verbose_name_plural = _('archive datas')
 
     def __str__(self):
-        return str(self.school) + '/' + self.location
+        return str(self.school) + '/' + str(self.location) + ' (' + \
+               str(self.begin_year) + '-' + (str(self.end_year) if self.end_year else '') + ')'
 
 
 class LifecycleEvent(models.Model):
@@ -329,7 +330,7 @@ class NameType(IncrementalIDKoreModel):
     value = models.CharField(max_length=510, blank=True, db_column='nimi', verbose_name=_('name'))
 
     def __str__(self):
-        return str(self.value)
+        return str(self.type) + ': ' + str(self.value)
 
     class Meta:
         managed = False
@@ -397,7 +398,7 @@ class OwnerFounderType(models.Model):
 
 class Address(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
-    street_name_fi = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_suomeksi')
+    street_name_fi = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_suomeksi', verbose_name=_('street name fi'))
     street_name_sv = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_ruotsiksi')
     zip_code = models.CharField(max_length=510, blank=True, db_column='postitoimipaikka')
     municipality_fi = models.CharField(max_length=510, blank=True, db_column='kunnan_nimi_suomeksi')
@@ -602,10 +603,15 @@ class Employership(IncrementalIDKoreModel):
 class SchoolBuildingPhoto(models.Model):
     school_building = models.ForeignKey(SchoolBuilding, related_name='photos')
     url = models.URLField()
-    is_front = models.BooleanField(default=True, help_text="Is this a picture of the building front?")
+    is_front = models.BooleanField(default=True, help_text=_("Is this a picture of the building front?"),
+                                   verbose_name=_("is_front"))
 
     def __str__(self):
         return str(self.school_building)
+
+    class Meta:
+        verbose_name = _('school building photo')
+        verbose_name_plural = _('school building photos')
 
 
 class ArchiveDataLink(models.Model):

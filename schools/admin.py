@@ -22,10 +22,43 @@ class KoreAdmin(nested_admin.NestedModelAdmin):
         return True
 
 
+class ContemporaryFilter(admin.SimpleListFilter):
+    title = _('contemporary')
+    parameter_name = 'is_contemporary'
+
+    def lookups(self, request, model_admin):
+        return (('1', _('yes')), ('0', _('no')))
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.filter(end_year__isnull=True)
+        else:
+            return queryset.filter(end_year__isnull=False)
+
+
+class ContemporaryPrincipalFilter(ContemporaryFilter):
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.exclude(employers=None).filter(employers__end_year__isnull=True)
+        else:
+            return queryset.filter(employers__end_year__isnull=False)
+
+
+class ContemporarySchoolFilter(ContemporaryFilter):
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.filter(names__end_year__isnull=True)
+        else:
+            return queryset.filter(names__end_year__isnull=False)
+
+
 class NameTypeInline(nested_admin.NestedStackedInline):
     model = NameType
     extra = 0
     exclude = ('id', )
+    verbose_name = _("")
 
 
 class SchoolNameInline(nested_admin.NestedTabularInline):
@@ -124,6 +157,8 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
 class SchoolAdmin(KoreAdmin):
     exclude = ('id', 'special_features', 'wartime_school', 'checked')
     list_display = ('__str__',)
+    list_filter = ('types__type', ContemporarySchoolFilter,)
+    search_fields = ['names__types__value']
     inlines = [SchoolNameInline,
                LifeCycleEventInline,
                SchoolContinuumActiveInline,
@@ -141,14 +176,18 @@ class BuildingAddressInline(nested_admin.NestedTabularInline):
 @admin.register(Building)
 class BuildingAdmin(KoreAdmin):
     exclude = ('id', 'approx', 'comment', 'reference')
+    search_fields = ['addresses__street_name_fi']
     list_display = ('__str__',)
     inlines = [BuildingAddressInline]
 
 
 @admin.register(Principal)
 class PrincipalAdmin(KoreAdmin):
-    exclude = ('id', 'approx',)
+    fields = ('surname', 'first_name',)
+    search_fields = ['surname', 'first_name']
     list_display = ('__str__',)
+    list_filter = (ContemporaryPrincipalFilter,)
+    inlines = [EmployershipInline]
 
 
 class ArchiveDataLinkInline(admin.TabularInline):
@@ -157,15 +196,17 @@ class ArchiveDataLinkInline(admin.TabularInline):
 
 @admin.register(ArchiveData)
 class ArchiveDataAdmin(KoreAdmin):
-    fields = ('school', 'location')
+    fields = ('school', 'location', 'begin_year', 'end_year')
     readonly_fields = fields
     search_fields = ['school__names__types__value', 'location']
     list_display = ('__str__', 'link')
+    list_filter = (ContemporaryFilter, 'location',)
     inlines = [ArchiveDataLinkInline]
 
 
 class SchoolBuildingPhotoInline(admin.TabularInline):
     model = SchoolBuildingPhoto
+    extra = 0
 
 
 @admin.register(SchoolBuilding)
@@ -174,7 +215,7 @@ class SchoolBuildingAdmin(KoreAdmin):
     readonly_fields = fields
     search_fields = ['school__names__types__value']
     list_display = ('__str__', 'has_photo')
-    list_filter = ('photos',)
+    list_filter = (ContemporaryFilter,)
     inlines = [SchoolBuildingPhotoInline]
 
 
@@ -207,6 +248,8 @@ class AddressLocationAdmin(geo_admin.OSMGeoAdmin):
 
 
 @admin.register(Address)
-class AddressAdmin(admin.ModelAdmin):
-    fields = ('street_name_fi',)
-    readonly_fields = ('street_name_fi',)
+class AddressAdmin(KoreAdmin):
+    fields = ('street_name_fi', 'begin_day', 'begin_month', 'begin_year',
+              'end_day', 'end_month', 'end_year')
+    search_fields = ['street_name_fi']
+    list_filter = (ContemporaryFilter,)
