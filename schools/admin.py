@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.contrib.gis import admin as geo_admin
+import nested_admin
 from .models import *
+from django.utils.translation import ugettext_lazy as _
 
 
-class KoreAdmin(admin.ModelAdmin):
+class KoreAdmin(nested_admin.NestedModelAdmin):
     """
     Makes sure the admin cannot delete schools or other kore data
     """
@@ -17,7 +19,136 @@ class KoreAdmin(admin.ModelAdmin):
         return actions
 
     def has_add_permission(self, request):
-        return False
+        return True
+
+
+class NameTypeInline(nested_admin.NestedStackedInline):
+    model = NameType
+    extra = 0
+    exclude = ('id', )
+
+
+class SchoolNameInline(nested_admin.NestedTabularInline):
+    model = SchoolName
+    extra = 0
+    exclude = ('id', 'reference', 'approx_begin', 'approx_end')
+    inlines = [NameTypeInline]
+    ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
+
+
+class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
+    model = SchoolContinuum
+    fk_name = 'active_school'
+    verbose_name = _("Action targeting another school")
+    verbose_name_plural = _("Actions targeting another school")
+    extra = 0
+    exclude = ('approx',)
+    raw_id_fields = ('target_school',)
+    autocomplete_lookup_fields = {
+        'fk': ['target_school'],
+    }
+    ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
+
+
+class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
+    model = SchoolContinuum
+    fk_name = 'target_school'
+    verbose_name = _("Action targeting this school")
+    verbose_name_plural = _("Actions targeting this school")
+    extra = 0
+    exclude = ('approx',)
+    raw_id_fields = ('active_school',)
+    autocomplete_lookup_fields = {
+        'fk': ['active_school'],
+    }
+    ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
+
+
+class LifeCycleEventInline(nested_admin.NestedTabularInline):
+    model = LifecycleEvent
+    extra = 0
+    exclude = ('approx', 'decisionmaker', 'decision_day', 'decision_month', 'decision_year', 'additional_info', 'reference')
+    ordering = ('year', 'month', 'day')
+    classes = ('grp-collapse grp-open',)
+
+
+class SchoolFieldInline(nested_admin.NestedTabularInline):
+    model = SchoolField
+    fk_name = 'school'
+    extra = 0
+    exclude = ('id', 'name_id')
+
+
+class SchoolLanguageInline(nested_admin.NestedTabularInline):
+    model = SchoolLanguage
+    extra = 0
+
+
+class SchoolTypeInline(nested_admin.NestedTabularInline):
+    model = SchoolType
+    fk_name = 'school'
+    extra = 0
+    exclude = ('main_school', 'reference', 'approx_begin', 'approx_end')
+    ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
+
+
+class EmployershipInline(nested_admin.NestedTabularInline):
+    model = Employership
+    extra = 0
+    exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
+    raw_id_fields = ('principal',)
+    autocomplete_lookup_fields = {
+        'fk': ['principal'],
+    }
+    ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
+
+
+class SchoolBuildingInline(nested_admin.NestedTabularInline):
+    model = SchoolBuilding
+    extra = 0
+    exclude = ('id', 'ownership', 'reference', 'approx_begin', 'approx_end')
+    raw_id_fields = ('building',)
+    autocomplete_lookup_fields = {
+        'fk': ['building'],
+    }
+    ordering = ('begin_year', 'begin_month', 'begin_day')
+    classes = ('grp-collapse grp-open',)
+
+
+@admin.register(School)
+class SchoolAdmin(KoreAdmin):
+    exclude = ('id', 'special_features', 'wartime_school', 'checked')
+    list_display = ('__str__',)
+    inlines = [SchoolNameInline,
+               LifeCycleEventInline,
+               SchoolContinuumActiveInline,
+               SchoolContinuumTargetInline,
+               SchoolBuildingInline,
+               SchoolTypeInline,
+               EmployershipInline]
+
+
+class BuildingAddressInline(nested_admin.NestedTabularInline):
+    model = BuildingAddress
+    extra = 0
+
+
+@admin.register(Building)
+class BuildingAdmin(KoreAdmin):
+    exclude = ('id', 'approx', 'comment', 'reference')
+    list_display = ('__str__',)
+    inlines = [BuildingAddressInline]
+
+
+@admin.register(Principal)
+class PrincipalAdmin(KoreAdmin):
+    exclude = ('id', 'approx',)
+    list_display = ('__str__',)
 
 
 class ArchiveDataLinkInline(admin.TabularInline):

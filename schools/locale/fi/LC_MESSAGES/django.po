@@ -1,0 +1,271 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-03-22 14:51+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: models.py:52 models.py:175 models.py:200 models.py:220 models.py:249
+#: models.py:278 models.py:310 models.py:344 models.py:405 models.py:426
+#: models.py:442 models.py:472 models.py:574
+msgid "start year"
+msgstr "alkamisvuosi"
+
+#: models.py:53 models.py:179 models.py:201 models.py:223 models.py:252
+#: models.py:281 models.py:313 models.py:347 models.py:408 models.py:427
+#: models.py:445 models.py:475 models.py:577
+msgid "end year"
+msgstr "päättymisvuosi"
+
+#: models.py:66 models.py:216
+msgid "type"
+msgstr "tyyppi"
+
+#: models.py:67 models.py:101
+msgid "day"
+msgstr "päivä"
+
+#: models.py:68 models.py:102
+msgid "month"
+msgstr "kuukausi"
+
+#: models.py:69 models.py:103
+msgid "year"
+msgstr "vuosi"
+
+#: models.py:70
+msgid "decisionmaker"
+msgstr "päätöksen tekijä"
+
+#: models.py:71
+msgid "decision day"
+msgstr "päätöksen päivä"
+
+#: models.py:72
+msgid "decision month"
+msgstr "päätöksen kuukausi"
+
+#: models.py:73
+msgid "decision year"
+msgstr "päätöksen vuosi"
+
+#: models.py:74
+msgid "additional info"
+msgstr "lisätietoja"
+
+#: models.py:75 models.py:104
+msgid "reference"
+msgstr "viite"
+
+#: models.py:81
+msgid "lifecycle event"
+msgstr "elinkaaritapahtuma"
+
+#: models.py:82
+msgid "lifecycle events"
+msgstr "elinkaaritapahtumat"
+
+#: models.py:98
+msgid "active school"
+msgstr "aktiivinen koulu"
+
+#: models.py:99
+msgid "description"
+msgstr "selite"
+
+#: models.py:100
+msgid "target school"
+msgstr "kohdekoulu"
+
+#: models.py:110
+msgid "continuum event"
+msgstr "jatkumotapahtuma"
+
+#: models.py:111
+msgid "continuum events"
+msgstr "jatkumotapahtumat"
+
+#: models.py:147
+msgid "nicknames"
+msgstr "lempinimet"
+
+#: models.py:165
+msgid "school"
+msgstr "koulua"
+
+#: models.py:166
+msgid "schools"
+msgstr "koulut"
+
+#: models.py:173 models.py:218 models.py:247 models.py:276 models.py:308
+#: models.py:342 models.py:403 models.py:440 models.py:470 models.py:572
+msgid "begin day"
+msgstr "alkamispäivä"
+
+#: models.py:174 models.py:219 models.py:248 models.py:277 models.py:309
+#: models.py:343 models.py:404 models.py:441 models.py:471 models.py:573
+msgid "start month"
+msgstr "alkamiskuukausi"
+
+#: models.py:177 models.py:221 models.py:250 models.py:279 models.py:311
+#: models.py:345 models.py:406 models.py:443 models.py:473 models.py:575
+msgid "end day"
+msgstr "päättymispäivä"
+
+#: models.py:178 models.py:222 models.py:251 models.py:280 models.py:312
+#: models.py:346 models.py:407 models.py:444 models.py:474 models.py:576
+msgid "end month"
+msgstr "päättymiskuukausi"
+
+#: models.py:240
+msgid "school type"
+msgstr "koulun tyyppi"
+
+#: models.py:241
+msgid "school types"
+msgstr "koulun tyypit"
+
+#: models.py:335
+msgid "name type"
+msgstr "nimityyppi"
+
+#: models.py:336
+msgid "name types"
+msgstr "nimityypit"
+
+#: models.py:372
+msgid "school name"
+msgstr "koulun nimi"
+
+#: models.py:373
+msgid "school names"
+msgstr "koulun nimet"
+
+#: models.py:468 models.py:548
+msgid "building"
+msgstr "rakennus"
+
+#: models.py:504
+msgid "school building"
+msgstr "koulun rakennus"
+
+#: models.py:505
+msgid "school buildings"
+msgstr "koulun rakennukset"
+
+#: models.py:565 models.py:571
+msgid "principal"
+msgstr "rehtori"
+
+#: models.py:588
+msgid "employership"
+msgstr "työsuhde"
+
+#: models.py:589
+msgid "employerships"
+msgstr "työsuhteet"
+
+#: admin.py:42
+msgid "Action targeting another school"
+msgstr "Tämän koulun tapahtuma"
+
+#: admin.py:43
+msgid "Actions targeting another school"
+msgstr "Tämän koulun tapahtumat"
+
+#: admin.py:57
+msgid "Action targeting this school"
+msgstr "Muiden koulujen tapahtuma"
+
+#: admin.py:58
+msgid "Actions targeting this school"
+msgstr "Muiden koulujen tapahtumat"
+
+#: models.py:566
+msgid "principals"
+msgstr "rehtorit"
+
+#: models.py:549
+msgid "buildings"
+msgstr "rakennukset"
+
+#: models.py:510
+msgid "neighborhood"
+msgstr "kaupunginosa"
+
+#: models.py:511
+msgid "construction year"
+msgstr "rakennusvuosi"
+
+#: models.py:512
+msgid "architect"
+msgstr "arkkitehti"
+
+#: models.py:513
+msgid "architect firm"
+msgstr "arkkitehtitoimisto"
+
+#: models.py:514
+msgid "property number"
+msgstr "kiinteistönumero"
+
+#: models.py:516
+msgid "sliced"
+msgstr "viipalerakennus"
+
+#: models.py:463
+msgid "building address"
+msgstr "rakennuksen osoite"
+
+#: models.py:464
+msgid "building addresses"
+msgstr "rakennuksen osoitteet"
+
+#: models.py:416
+msgid "address"
+msgstr "osoite"
+
+#: models.py:417
+msgid "addresses"
+msgstr "osoitteet"
+
+#: models.py:59
+msgid "archive data"
+msgstr "arkistoaineisto"
+
+#: models.py:60
+msgid "archive datas"
+msgstr "arkistoaineistot"
+
+#: models.py:639
+msgid "address location"
+msgstr "osoitteen sijainti"
+
+#: models.py:640
+msgid "address locations"
+msgstr "osoitteiden sijainnit"
+
+#: models.py:619
+msgid "archive data link"
+msgstr "linkki arkistoaineistoon"
+
+#: models.py:620
+msgid "archive data links"
+msgstr "linkit arkistoaineistoon"
+
+#: models.py:329
+msgid "name"
+msgstr "nimi"

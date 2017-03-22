@@ -1,13 +1,11 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 
 from schools.api import router
 
-urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'kore.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
-
+urlpatterns = [
+    url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'v1/', include(router.urls))
-)
+    url(r'v1/', include(router.urls)),
+    url(r'^nested_admin/', include('nested_admin.urls')),
+]
