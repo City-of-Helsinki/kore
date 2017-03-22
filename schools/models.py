@@ -151,6 +151,10 @@ class School(IncrementalIDKoreModel):
         else:
             return types[0].value
 
+    @staticmethod
+    def autocomplete_search_fields():
+        return ("names__types__value__icontains",)
+
     class Meta:
         managed = False
         db_table = 'Koulu'
@@ -520,6 +524,10 @@ class Building(IncrementalIDKoreModel):
                 photos.append(photo)
         return photos
 
+    @staticmethod
+    def autocomplete_search_fields():
+        return ("addresses__street_name_fi__icontains",)
+
     class Meta:
         managed = False
         db_table = 'Rakennus'
@@ -532,6 +540,10 @@ class Principal(IncrementalIDKoreModel):
 
     def __str__(self):
         return str(self.surname) + ', ' + str(self.first_name)
+
+    @staticmethod
+    def autocomplete_search_fields():
+        return ("surname__icontains", "first_name__icontains",)
 
     class Meta:
         managed = False

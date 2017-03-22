@@ -39,6 +39,10 @@ class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
     fk_name = 'active_school'
     extra = 0
     exclude = ('approx',)
+    raw_id_fields = ('target_school',)
+    autocomplete_lookup_fields = {
+        'fk': ['target_school'],
+    }
 
 
 class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
@@ -46,6 +50,10 @@ class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
     fk_name = 'target_school'
     extra = 0
     exclude = ('approx',)
+    raw_id_fields = ('active_school',)
+    autocomplete_lookup_fields = {
+        'fk': ['active_school'],
+    }
 
 
 class LifeCycleEventInline(nested_admin.NestedTabularInline):
@@ -77,12 +85,20 @@ class EmployershipInline(nested_admin.NestedTabularInline):
     model = Employership
     extra = 0
     exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
+    raw_id_fields = ('principal',)
+    autocomplete_lookup_fields = {
+        'fk': ['principal'],
+    }
 
 
 class SchoolBuildingInline(nested_admin.NestedTabularInline):
     model = SchoolBuilding
     extra = 0
     exclude = ('id', 'ownership', 'reference', 'approx_begin', 'approx_end')
+    raw_id_fields = ('building',)
+    autocomplete_lookup_fields = {
+        'fk': ['building'],
+    }
 
 
 @admin.register(School)
