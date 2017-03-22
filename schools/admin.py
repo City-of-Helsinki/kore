@@ -18,38 +18,71 @@ class KoreAdmin(nested_admin.NestedModelAdmin):
         return actions
 
     def has_add_permission(self, request):
-        return False
+        return True
+
+
+class NameTypeInline(nested_admin.NestedStackedInline):
+    model = NameType
+    extra = 0
+    exclude = ('id', )
 
 
 class SchoolNameInline(nested_admin.NestedTabularInline):
     model = SchoolName
-    extra = 1
+    extra = 0
     exclude = ('id', 'reference', 'approx_begin', 'approx_end')
+    inlines = [NameTypeInline]
+
+
+class SchoolContinuumActiveInline(nested_admin.NestedTabularInline):
+    model = SchoolContinuum
+    fk_name = 'active_school'
+    extra = 0
+    exclude = ('approx',)
+
+
+class SchoolContinuumTargetInline(nested_admin.NestedTabularInline):
+    model = SchoolContinuum
+    fk_name = 'target_school'
+    extra = 0
+    exclude = ('approx',)
+
+
+class LifeCycleEventInline(nested_admin.NestedTabularInline):
+    model = LifecycleEvent
+    extra = 0
+    exclude = ('approx',)
 
 
 class SchoolFieldInline(nested_admin.NestedTabularInline):
     model = SchoolField
     fk_name = 'school'
-    extra = 1
+    extra = 0
     exclude = ('id', 'name_id')
 
 
 class SchoolLanguageInline(nested_admin.NestedTabularInline):
     model = SchoolLanguage
-    extra = 1
+    extra = 0
 
 
 class SchoolTypeInline(nested_admin.NestedTabularInline):
     model = SchoolType
     fk_name = 'school'
-    extra = 1
+    extra = 0
     exclude = ('main_school', 'reference', 'approx_begin', 'approx_end')
 
 
 class EmployershipInline(nested_admin.NestedTabularInline):
     model = Employership
-    extra = 1
+    extra = 0
     exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
+
+
+class SchoolBuildingInline(nested_admin.NestedTabularInline):
+    model = SchoolBuilding
+    extra = 0
+    exclude = ('id', 'ownership', 'reference', 'approx_begin', 'approx_end')
 
 
 @admin.register(School)
@@ -57,8 +90,30 @@ class SchoolAdmin(KoreAdmin):
     exclude = ('id', 'special_features', 'wartime_school', 'checked')
     list_display = ('__str__',)
     inlines = [SchoolNameInline,
+               LifeCycleEventInline,
+               SchoolContinuumActiveInline,
+               SchoolContinuumTargetInline,
+               SchoolBuildingInline,
                SchoolTypeInline,
                EmployershipInline]
+
+
+class BuildingAddressInline(nested_admin.NestedTabularInline):
+    model = BuildingAddress
+    extra = 0
+
+
+@admin.register(Building)
+class BuildingAdmin(KoreAdmin):
+    exclude = ('id', 'approx',)
+    list_display = ('__str__',)
+    inlines = [BuildingAddressInline]
+
+
+@admin.register(Principal)
+class PrincipalAdmin(KoreAdmin):
+    exclude = ('id', 'approx',)
+    list_display = ('__str__',)
 
 
 class ArchiveDataLinkInline(admin.TabularInline):

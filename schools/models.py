@@ -4,6 +4,23 @@ from django.contrib.gis.db import models
 from munigeo.models import Address as Location
 
 
+class IncrementalIDKoreModel(models.Model):
+    """
+    Needed as Django Autofield doesn't work with an existing database.
+    """
+
+    def save(self, **kwargs):
+        if not self.id:
+            print(self.__class__)
+            self.id = self.__class__.objects.all().aggregate(models.Max('id'))['id__max']+1
+            print(self.id)
+        return super().save(kwargs)
+
+    class Meta:
+        managed = False
+        abstract = True
+
+
 class DataType(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
@@ -25,7 +42,7 @@ class SchoolFieldName(models.Model):
         db_table = 'Ala'
 
 
-class ArchiveData(models.Model):
+class ArchiveData(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey('School', null=True, db_column='koulun_id', related_name='archives')
     name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
@@ -66,6 +83,9 @@ class LifecycleEventType(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     description = models.CharField(max_length=510, blank=True, db_column='selite')
 
+    def __str__(self):
+        return str(self.description)
+
     class Meta:
         managed = False
         db_table = 'Elinkaaritapahtuman_laji'
@@ -96,6 +116,9 @@ class Neighborhood(models.Model):
     merge_month = models.IntegerField(blank=True, null=True, db_column='liittamiskuukausi')
     merge_year = models.IntegerField(blank=True, null=True, db_column='liittamisvuosi')
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         managed = False
         db_table = 'Kaupunginosa'
@@ -113,8 +136,8 @@ class Language(models.Model):
         db_table = 'Kieli'
 
 
-class School(models.Model):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+class School(IncrementalIDKoreModel):
+    id = models.AutoField(db_column='ID', primary_key=True)
     special_features = models.TextField(blank=True, db_column='erityispiirteet')
     wartime_school = models.BooleanField(default=False, db_column='sota_ajan_koulu')
     nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet')
@@ -149,6 +172,12 @@ class SchoolField(models.Model):
 
     def __str__(self):
         return str(self.field)
+
+    def save(self, **kwargs):
+        # the main school id must be set to the school id unless provided otherwise
+        if not self.main_school_id:
+            self.main_school_id = self.school_id
+        return super().save(kwargs)
 
     class Meta:
         managed = False
@@ -188,6 +217,12 @@ class SchoolType(models.Model):
 
     def __str__(self):
         return str(self.type)
+
+    def save(self, **kwargs):
+        # the main school id must be set to the school id unless provided otherwise
+        if not self.main_school_id:
+            self.main_school_id = self.school_id
+        return super().save(kwargs)
 
     class Meta:
         managed = False
@@ -273,18 +308,21 @@ class NumberOfGrades(models.Model):
         db_table = 'Luokka-asteiden_lukumaara'
 
 
-class NameType(models.Model):
+class NameType(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.ForeignKey('SchoolName', blank=True, null=True, related_name='types', db_column='nimen_id')
-    type = models.CharField(max_length=510, blank=True, db_column='nimen_tyyppi')
+    type = models.CharField(max_length=510, blank=True, db_column='nimen_tyyppi', default='virallinen nimi')
     value = models.CharField(max_length=510, blank=True, db_column='nimi')
+
+    def __str__(self):
+        return str(self.value)
 
     class Meta:
         managed = False
         db_table = 'Nimen_tyyppi'
 
 
-class SchoolName(models.Model):
+class SchoolName(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, blank=True, null=True, related_name='names', db_column='koulun_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva')
@@ -339,7 +377,7 @@ class OwnerFounderType(models.Model):
         db_table = 'Omistaja_Perustajatyyppi'
 
 
-class Address(models.Model):
+class Address(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     street_name_fi = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_suomeksi')
     street_name_sv = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_ruotsiksi')
@@ -361,10 +399,10 @@ class Address(models.Model):
         db_table = 'Osoite'
 
     def __str__(self):
-        return str(self.street_name_fi) + ', ' + str(self.municipality_fi)
+        return str(self.street_name_fi) + ', ' + str(self.municipality_fi) + ' (' + \
+               str(self.begin_year) + '-' + (str(self.end_year) if self.end_year else '') + ')'
 
-
-class BuildingName(models.Model):
+class BuildingName(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
     building = models.ForeignKey('Building', blank=True, null=True, db_column='rakennuksen_id',
@@ -438,13 +476,18 @@ class SchoolBuilding(models.Model):
         return bool(self.photos.all())
     has_photo.boolean = True
 
+    def save(self, **kwargs):
+        if not self.id:
+            self.id = str(self.school_id) + '-' + str(self.building_id)
+        return super().save(kwargs)
+
     class Meta:
         managed = False
         db_table = 'Rakennuksen_status'
         ordering = ['school']
 
 
-class Building(models.Model):
+class Building(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     neighborhood = models.ForeignKey(Neighborhood, blank=True, null=True, db_column='kaupunginosan_id')
     construction_year = models.IntegerField(blank=True, null=True, db_column='rakennusvuosi')
@@ -482,7 +525,7 @@ class Building(models.Model):
         db_table = 'Rakennus'
 
 
-class Principal(models.Model):
+class Principal(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     surname = models.CharField(max_length=510, blank=True, db_column='sukunimi')
     first_name = models.CharField(max_length=510, blank=True, db_column='etunimi')
@@ -495,7 +538,7 @@ class Principal(models.Model):
         db_table = 'Rehtori'
 
 
-class Employership(models.Model):
+class Employership(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id')
     nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
