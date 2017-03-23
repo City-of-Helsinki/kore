@@ -120,7 +120,7 @@ class SchoolContinuum(models.Model):
         verbose_name_plural = _('continuum events')
 
     def __str__(self):
-        return str(self.active_school) + ' ' + self.description + ' ' + str(self.target_school)
+        return str(self.active_school) + ' ' + str(self.description) + ' ' + str(self.target_school)
 
 class Neighborhood(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
@@ -162,7 +162,7 @@ class School(IncrementalIDKoreModel):
         if not types:
             return '<no name>'
         else:
-            return types[0].value
+            return str(types[0].value)
 
     @staticmethod
     def autocomplete_search_fields():
@@ -373,7 +373,7 @@ class SchoolName(IncrementalIDKoreModel):
             return None
 
     def __str__(self):
-        return self.get_official_name()
+        return str(self.get_official_name())
 
     class Meta:
         managed = False
