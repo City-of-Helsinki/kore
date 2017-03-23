@@ -305,3 +305,12 @@ msgstr "nykyiset"
 #: admin.py:30
 msgid "historical"
 msgstr "historialliset"
+
+#: admin.py:296
+msgid "Building in this address"
+msgstr "Rakennus tässä osoitteessa"
+
+#: admin.py:297
+msgid "Buildings in this address"
+msgstr "Rakennukset tässä osoitteessa"
+

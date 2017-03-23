@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.gis import admin as geo_admin
 import nested_admin
+from leaflet.admin import LeafletGeoAdminMixin
+
 from .models import *
 from django.utils.translation import ugettext_lazy as _
 
@@ -252,7 +254,7 @@ class AddressHasLocationFilter(admin.SimpleListFilter):
             return queryset.filter(location__isnull=True)
 
 
-@admin.register(AddressLocation)
+#@admin.register(AddressLocation)
 class AddressLocationAdmin(geo_admin.OSMGeoAdmin):
     default_lon = 2776460  # Central Railway Station in EPSG:3857
     default_lat = 8438120
@@ -266,9 +268,40 @@ class AddressLocationAdmin(geo_admin.OSMGeoAdmin):
         return super(AddressLocationAdmin, self).save_model(request, obj, form, change)
 
 
+class AddressLocationInline(LeafletGeoAdminMixin, nested_admin.NestedTabularInline):
+    map_width = '800px'
+    model = AddressLocation
+    fields = ('location',)
+    settings_overrides = {
+        'DEFAULT_CENTER': (60.192059, 24.945831),  # Helsinki
+        'DEFAULT_ZOOM': 11,
+        'MIN_ZOOM': 6,
+        'MAX_ZOOM': 16,
+        'SPATIAL_EXTENT': (24.8, 60.1, 25.1, 60.3)
+    }
+
+    def save_model(self, request, obj, form, change):
+        obj.handmade = True
+        return super().save_model(request, obj, form, change)
+
+
+class BuildingAddressInlineForAddress(nested_admin.NestedTabularInline):
+    model = BuildingAddress
+    extra = 0
+    raw_id_fields = ('building',)
+    classes = ('grp-collapse grp-open',)
+    autocomplete_lookup_fields = {
+        'fk': ['building'],
+    }
+    verbose_name = _('Building in this address')
+    verbose_name_plural = _('Buildings in this address')
+
+
 @admin.register(Address)
 class AddressAdmin(KoreAdmin):
     fields = ('street_name_fi', 'begin_day', 'begin_month', 'begin_year',
               'end_day', 'end_month', 'end_year')
     search_fields = ['street_name_fi']
     list_filter = (ContemporaryFilter,)
+    inlines = [AddressLocationInline, BuildingAddressInlineForAddress]
+    ordering = ('street_name_fi',)

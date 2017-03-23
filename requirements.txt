@@ -4,6 +4,7 @@ Markdown
 django-filter<0.12
 django-grappelli
 django-nested-admin
+django-leaflet
 psycopg2
 raven
 django-extensions
