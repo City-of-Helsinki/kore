@@ -26,6 +26,9 @@ class DataType(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
 
+    def __str__(self):
+        return str(self.name)
+
     class Meta:
         managed = False
         db_table = 'Aineistotyyppi'
@@ -541,6 +544,8 @@ class Building(IncrementalIDKoreModel):
         names = self.names.order_by('-begin_year')
         if names:
             s += ' (%s)' % names[0].name
+        if self.construction_year:
+            s += ' (rak. %s)' % self.construction_year
         return s
 
     def get_photos(self):

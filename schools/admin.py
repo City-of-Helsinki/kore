@@ -153,6 +153,11 @@ class EmployershipInline(nested_admin.NestedTabularInline):
     classes = ('grp-collapse grp-open',)
 
 
+class SchoolBuildingPhotoInline(admin.TabularInline):
+    model = SchoolBuildingPhoto
+    extra = 0
+
+
 class SchoolBuildingInline(nested_admin.NestedTabularInline):
     model = SchoolBuilding
     extra = 0
@@ -163,6 +168,20 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
     classes = ('grp-collapse grp-open',)
+    inlines = [SchoolBuildingPhotoInline]
+
+
+class ArchiveDataLinkInline(admin.TabularInline):
+    model = ArchiveDataLink
+
+
+class ArchiveDataInline(nested_admin.NestedTabularInline):
+    model = ArchiveData
+    fields = ('school', 'location', 'begin_year', 'end_year')
+    extra = 0
+    ordering = ('end_year',)
+    classes = ('grp-collapse grp-open',)
+    inlines = [ArchiveDataLinkInline]
 
 
 @admin.register(School)
@@ -177,7 +196,8 @@ class SchoolAdmin(KoreAdmin):
                SchoolContinuumTargetInline,
                SchoolBuildingInline,
                SchoolTypeInline,
-               EmployershipInline]
+               EmployershipInline,
+               ArchiveDataInline]
     ordering = ('-names__begin_year',)
 
 
@@ -185,6 +205,7 @@ class BuildingAddressInline(nested_admin.NestedTabularInline):
     model = BuildingAddress
     extra = 0
     raw_id_fields = ('address',)
+    classes = ('grp-collapse grp-open',)
     autocomplete_lookup_fields = {
         'fk': ['address'],
     }
@@ -198,7 +219,7 @@ class BuildingAdmin(KoreAdmin):
     list_filter = (ContemporaryBuildingFilter,)
     inlines = [BuildingAddressInline,
                SchoolBuildingInline]
-    ordering = ('-construction_year',)
+    ordering = ('addresses__street_name_fi',)
 
 
 @admin.register(Principal)
@@ -208,11 +229,7 @@ class PrincipalAdmin(KoreAdmin):
     list_display = ('__str__',)
     list_filter = (ContemporaryPrincipalFilter,)
     inlines = [EmployershipInline]
-    ordering = ('-employers__begin_year',)
-
-
-class ArchiveDataLinkInline(admin.TabularInline):
-    model = ArchiveDataLink
+    ordering = ('surname', 'first_name')
 
 
 @admin.register(ArchiveData)
@@ -223,14 +240,10 @@ class ArchiveDataAdmin(KoreAdmin):
     list_display = ('__str__', 'link')
     list_filter = (ContemporaryFilter, 'location',)
     inlines = [ArchiveDataLinkInline]
+    ordering = ('end_year',)
 
 
-class SchoolBuildingPhotoInline(admin.TabularInline):
-    model = SchoolBuildingPhoto
-    extra = 0
-
-
-@admin.register(SchoolBuilding)
+#@admin.register(SchoolBuilding)
 class SchoolBuildingAdmin(KoreAdmin):
     fields = ('school', 'building', 'begin_year', 'end_year')
     readonly_fields = fields
