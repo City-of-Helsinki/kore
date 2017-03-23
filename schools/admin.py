@@ -294,7 +294,7 @@ class AddressLocationAdmin(geo_admin.OSMGeoAdmin):
 class AddressLocationInline(LeafletGeoAdminMixin, nested_admin.NestedTabularInline):
     map_width = '800px'
     model = AddressLocation
-    fields = ('location',)
+    fields = ('location','handmade')
     settings_overrides = {
         'DEFAULT_CENTER': (60.192059, 24.945831),  # Helsinki
         'DEFAULT_ZOOM': 11,

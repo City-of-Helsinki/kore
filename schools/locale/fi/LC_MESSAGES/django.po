@@ -314,3 +314,14 @@ msgstr "Rakennus tässä osoitteessa"
 msgid "Buildings in this address"
 msgstr "Rakennukset tässä osoitteessa"
 
+#: models.py:444
+msgid "Street address not found in %s. Please use a valid address or select the location manually on the map."
+msgstr "Antamaasi osoitetta ei löytynyt kunnasta %s. Korjaa osoite tai valitse sijainti kartalta käsin."
+
+#: models.py:670
+msgid "Update location by hand"
+msgstr "Päivitä sijainti käsin"
+
+#: models.py:671
+msgid "Select this if you want to update the location manually. Otherwise, the location will update automatically when you change the address."
+msgstr "Valitse tämä, jos haluat määrätä sijainnin kartalla käsin. Muutoin sijainti etsitään automaattisesti kun muutat osoitetta."

@@ -1,8 +1,11 @@
 from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
+from django.forms import ValidationError
 from munigeo.models import Address as Location
 from django.utils.translation import ugettext_lazy as _
+
+from schools.utils import geocode_address
 
 
 class IncrementalIDKoreModel(models.Model):
@@ -430,6 +433,30 @@ class Address(IncrementalIDKoreModel):
         return str(self.street_name_fi) + ', ' + str(self.municipality_fi) + ' (' + \
                str(self.begin_year) + '-' + (str(self.end_year) if self.end_year else '') + ')'
 
+    def clean(self):
+        if not hasattr(self, 'location') or not self.location.handmade:
+            if not self.municipality_fi:
+                self.municipality_fi = 'Helsinki'
+            munigeo_address = geocode_address(self.street_name_fi, self.municipality_fi)
+            if not munigeo_address:
+                raise ValidationError(
+                    {'street_name_fi': _(
+                        "Street address not found in %s. Please use a valid address or select the location manually on the map."
+                    ) % self.municipality_fi})
+            location = munigeo_address.location
+            if self.location:
+                self.changed_location = location
+            else:
+                self.location = AddressLocation(location=location)
+
+    def save(self, **kwargs):
+        saved = super().save()
+        self.location.address = self
+        if self.changed_location:
+            self.location.location = self.changed_location
+        self.location.save()
+        return saved
+
 
 class BuildingName(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
@@ -639,7 +666,8 @@ class ArchiveDataLink(models.Model):
 class AddressLocation(models.Model):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
     location = models.PointField(srid=4326, null=True, blank=True)
-    handmade = models.BooleanField(default=False)
+    handmade = models.BooleanField(default=False, verbose_name=_("Update location by hand"),
+                                   help_text=_("Select this if you want to update the location manually. Otherwise, the location will update automatically when you change the address."))
 
     objects = models.GeoManager()
 

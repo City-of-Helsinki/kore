@@ -4,6 +4,8 @@ from munigeo.models import Address as MuniAddress
 import re
 from optparse import make_option
 
+from schools.utils import geocode_address
+
 
 class Command(BaseCommand):
     help = 'Geocodes all addresses in Address.objects'
@@ -29,21 +31,7 @@ class Command(BaseCommand):
             if location.location is not None and not options['rewrite_existing']:
                 continue
 
-            address_street, town = str(address).split(', ')
-            address_street_number = re.split('( [0-9]+)', address_street)
-            address_street = address_street_number[0]
-            if len(address_street_number) > 1:
-                address_number = address_street_number[1].strip()
-            else:
-                address_number = None
-
-            if address_number is not None:
-                match = MuniAddress.objects.filter(
-                    street__name=address_street, number=address_number,
-                    street__municipality__name=town
-                ).first()
-            else:
-                match = None
+            match = geocode_address(address.street_name_fi, address.municipality_fi)
 
             if match is not None:
                 self.stdout.write(str(address) + ' geocoded as ' + str(match))
