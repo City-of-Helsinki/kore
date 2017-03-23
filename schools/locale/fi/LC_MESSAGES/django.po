@@ -325,3 +325,11 @@ msgstr "Päivitä sijainti käsin"
 #: models.py:671
 msgid "Select this if you want to update the location manually. Otherwise, the location will update automatically when you change the address."
 msgstr "Valitse tämä, jos haluat määrätä sijainnin kartalla käsin. Muutoin sijainti etsitään automaattisesti kun muutat osoitetta."
+
+#: models.py:227
+msgid "School in this building"
+msgstr "Koulu tässä rakennuksessa"
+
+#: models.py:228
+msgid "Schools in this building"
+msgstr "Koulut tässä rakennuksessa"

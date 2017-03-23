@@ -170,9 +170,9 @@ class SchoolBuildingInline(nested_admin.NestedTabularInline):
     model = SchoolBuilding
     extra = 0
     exclude = ('id', 'ownership', 'reference', 'approx_begin', 'approx_end')
-    raw_id_fields = ('building', 'school')
+    raw_id_fields = ('building',)
     autocomplete_lookup_fields = {
-        'fk': ['building', 'school'],
+        'fk': ['building'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
     classes = ('grp-collapse grp-open',)
@@ -219,6 +219,15 @@ class BuildingAddressInline(nested_admin.NestedTabularInline):
     }
 
 
+class SchoolBuildingInlineForBuilding(SchoolBuildingInline):
+    raw_id_fields = ('school',)
+    autocomplete_lookup_fields = {
+        'fk': ['school'],
+    }
+    verbose_name = _('School in this building')
+    verbose_name_plural = _('Schools in this building')
+
+
 @admin.register(Building)
 class BuildingAdmin(KoreAdmin):
     exclude = ('id', 'approx', 'comment', 'reference')
@@ -226,7 +235,7 @@ class BuildingAdmin(KoreAdmin):
     list_display = ('__str__',)
     list_filter = (ContemporaryBuildingFilter,)
     inlines = [BuildingAddressInline,
-               SchoolBuildingInline]
+               SchoolBuildingInlineForBuilding]
     ordering = ('addresses__street_name_fi',)
 
 
@@ -308,11 +317,8 @@ class AddressLocationInline(LeafletGeoAdminMixin, nested_admin.NestedTabularInli
         return super().save_model(request, obj, form, change)
 
 
-class BuildingAddressInlineForAddress(nested_admin.NestedTabularInline):
-    model = BuildingAddress
-    extra = 0
+class BuildingAddressInlineForAddress(BuildingAddressInline):
     raw_id_fields = ('building',)
-    classes = ('grp-collapse grp-open',)
     autocomplete_lookup_fields = {
         'fk': ['building'],
     }
