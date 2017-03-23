@@ -35,8 +35,10 @@ class ContemporaryFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value() == '1':
             return queryset.filter(end_year__isnull=True)
-        else:
+        if self.value() == '0':
             return queryset.filter(end_year__isnull=False)
+        else:
+            return queryset
 
 
 class ContemporaryPrincipalFilter(ContemporaryFilter):
@@ -44,8 +46,10 @@ class ContemporaryPrincipalFilter(ContemporaryFilter):
     def queryset(self, request, queryset):
         if self.value() == '1':
             return queryset.exclude(employers=None).filter(employers__end_year__isnull=True)
-        else:
+        if self.value() == '0':
             return queryset.filter(employers__end_year__isnull=False)
+        else:
+            return queryset
 
 
 class ContemporarySchoolFilter(ContemporaryFilter):
@@ -53,8 +57,10 @@ class ContemporarySchoolFilter(ContemporaryFilter):
     def queryset(self, request, queryset):
         if self.value() == '1':
             return queryset.filter(names__end_year__isnull=True)
-        else:
+        if self.value() == '0':
             return queryset.filter(names__end_year__isnull=False)
+        else:
+            return queryset
 
 
 class ContemporaryBuildingFilter(ContemporaryFilter):
@@ -62,8 +68,10 @@ class ContemporaryBuildingFilter(ContemporaryFilter):
     def queryset(self, request, queryset):
         if self.value() == '1':
             return queryset.filter(schools__end_year__isnull=True)
-        else:
+        if self.value() == '0':
             return queryset.filter(schools__end_year__isnull=False)
+        else:
+            return queryset
 
 
 class NameTypeInline(nested_admin.NestedStackedInline):
@@ -263,8 +271,10 @@ class AddressHasLocationFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value() == '1':
             return queryset.filter(location__isnull=False)
-        else:
+        if self.value() == '0':
             return queryset.filter(location__isnull=True)
+        else:
+            return queryset
 
 
 #@admin.register(AddressLocation)
