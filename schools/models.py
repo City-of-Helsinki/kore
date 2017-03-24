@@ -182,7 +182,7 @@ class School(IncrementalIDKoreModel):
             return str(types[0].value)
 
     def is_contemporary(self):
-        return self.names.filter(end_year__is_null=True)
+        return self.names.filter(end_year__isnull=True)
 
     @staticmethod
     def autocomplete_search_fields():
@@ -605,7 +605,7 @@ class Principal(IncrementalIDKoreModel):
         return str(self.surname) + ', ' + str(self.first_name)
 
     def is_contemporary(self):
-        return self.employers.filter(end_year__is_null=True)
+        return self.employers.filter(end_year__isnull=True)
 
     @staticmethod
     def autocomplete_search_fields():
