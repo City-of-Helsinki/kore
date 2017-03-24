@@ -163,9 +163,9 @@ class EmployershipInline(nested_admin.NestedTabularInline):
     model = Employership
     extra = 0
     exclude = ('id', 'nimen_id', 'reference', 'approx_begin', 'approx_end')
-    raw_id_fields = ('principal', 'school')
+    raw_id_fields = ('principal',)
     autocomplete_lookup_fields = {
-        'fk': ['principal', 'school'],
+        'fk': ['principal'],
     }
     ordering = ('begin_year', 'begin_month', 'begin_day')
     classes = ('grp-collapse grp-open',)
@@ -249,13 +249,20 @@ class BuildingAdmin(KoreAdmin):
     ordering = ('addresses__street_name_fi',)
 
 
+class EmployershipInlineForPrincipal(EmployershipInline):
+    raw_id_fields = ('school',)
+    autocomplete_lookup_fields = {
+        'fk': ['school'],
+    }
+
+
 @admin.register(Principal)
 class PrincipalAdmin(KoreAdmin):
     fields = ('surname', 'first_name',)
     search_fields = ['surname', 'first_name']
     list_display = ('__str__',)
     list_filter = (ContemporaryPrincipalFilter,)
-    inlines = [EmployershipInline]
+    inlines = [EmployershipInlineForPrincipal]
     ordering = ('surname', 'first_name')
 
 

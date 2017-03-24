@@ -70,7 +70,7 @@ class SchoolFieldName(models.Model):
 
 
 class ArchiveData(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     school = models.ForeignKey('School', null=True, db_column='koulun_id', related_name='archives')
     name = models.ForeignKey('SchoolName', null=True, db_column='nimen_id')
     data_type = models.ForeignKey(DataType, blank=True, null=True, db_column='aineistotyypin_id')
@@ -141,7 +141,7 @@ class SchoolContinuum(KoreModel):
 
 
 class Neighborhood(KoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     name = models.CharField(max_length=510, blank=True, db_column='kaupunginosan_nimi')
     merge_day = models.IntegerField(blank=True, null=True, db_column='liittamispaiva')
     merge_month = models.IntegerField(blank=True, null=True, db_column='liittamiskuukausi')
@@ -167,7 +167,7 @@ class Language(models.Model):
 
 
 class School(IncrementalIDKoreModel):
-    id = models.AutoField(db_column='ID', primary_key=True)
+    id = models.AutoField(db_column='ID', primary_key=True, editable=False)
     special_features = models.TextField(blank=True, db_column='erityispiirteet')
     wartime_school = models.BooleanField(default=False, db_column='sota_ajan_koulu')
     nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet', verbose_name=_('nicknames'))
@@ -293,7 +293,7 @@ class SchoolFounder(KoreModel):
 
 
 class SchoolGender(KoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     school = models.ForeignKey(School, related_name='genders', blank=True, null=True, db_column='koulun_id')
     gender = models.CharField(max_length=510, blank=True, db_column='sukupuoli')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
@@ -324,7 +324,7 @@ class SchoolTypeName(models.Model):
 
 
 class NumberOfGrades(KoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     school = models.ForeignKey(School, related_name='grade_counts', blank=True, null=True, db_column='koulun_id')
     number = models.IntegerField(blank=True, null=True, db_column='lukumaara')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
@@ -342,7 +342,7 @@ class NumberOfGrades(KoreModel):
 
 
 class NameType(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     name = models.ForeignKey('SchoolName', blank=True, null=True, related_name='types', db_column='nimen_id')
     type = models.CharField(max_length=510, blank=True, db_column='nimen_tyyppi', default='virallinen nimi', verbose_name=_('name type'))
     value = models.CharField(max_length=510, blank=True, db_column='nimi', verbose_name=_('name'))
@@ -357,7 +357,7 @@ class NameType(IncrementalIDKoreModel):
 
 
 class SchoolName(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     school = models.ForeignKey(School, blank=True, null=True, related_name='names', db_column='koulun_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
@@ -393,7 +393,7 @@ class SchoolName(IncrementalIDKoreModel):
 
 
 class OwnerFounder(KoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
     type = models.ForeignKey('OwnerFounderType', blank=True, null=True,
                              db_column='omistaja_perustajatyypin_id')
@@ -412,7 +412,7 @@ class OwnerFounderType(models.Model):
 
 
 class Address(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     street_name_fi = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_suomeksi', verbose_name=_('street name fi'))
     street_name_sv = models.CharField(max_length=510, blank=True, db_column='kadun_nimi_ruotsiksi')
     zip_code = models.CharField(max_length=510, blank=True, db_column='postitoimipaikka')
@@ -467,7 +467,7 @@ class Address(IncrementalIDKoreModel):
 
 
 class BuildingName(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
     building = models.ForeignKey('Building', blank=True, null=True, db_column='rakennuksen_id',
                                  related_name='names')
@@ -510,7 +510,7 @@ class BuildingAddress(KoreModel):
 
 
 class SchoolBuilding(KoreModel):
-    id = models.CharField(max_length=100, primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True, editable=False)
     school = models.ForeignKey(School, related_name='buildings', db_column='koulun_id')
     building = models.ForeignKey('Building', related_name='schools', db_column='rakennuksen_id', verbose_name=_('building'))
     ownership = models.BooleanField(default=False, db_column='omistus')
@@ -552,7 +552,7 @@ class SchoolBuilding(KoreModel):
 
 
 class Building(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     neighborhood = models.ForeignKey(Neighborhood, blank=True, null=True, db_column='kaupunginosan_id', verbose_name=_('neighborhood'))
     construction_year = models.IntegerField(blank=True, null=True, db_column='rakennusvuosi', verbose_name=_('construction year'))
     architect = models.CharField(max_length=510, blank=True, db_column='arkkitehti', verbose_name=_('architect'))
@@ -597,7 +597,7 @@ class Building(IncrementalIDKoreModel):
 
 
 class Principal(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     surname = models.CharField(max_length=510, blank=True, db_column='sukunimi')
     first_name = models.CharField(max_length=510, blank=True, db_column='etunimi')
 
@@ -618,7 +618,7 @@ class Principal(IncrementalIDKoreModel):
 
 
 class Employership(IncrementalIDKoreModel):
-    id = models.IntegerField(db_column='ID', primary_key=True)
+    id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
     school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id')
     nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
     principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id', verbose_name=_('principal'))
