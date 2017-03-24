@@ -8,7 +8,28 @@ from django.utils.translation import ugettext_lazy as _
 from schools.utils import geocode_address
 
 
-class IncrementalIDKoreModel(models.Model):
+class KoreModel(models.Model):
+    """
+    Contains the necessary permissions for separating historical and contemporary records.
+    """
+
+    def is_contemporary(self):
+        """
+        By default, a Kore object itself knows if it's historical or not.
+        """
+        if hasattr(self, 'end_year'):
+            return not self.end_year
+        else:
+            # most objects without an end year are not temporal in the first place, certainly not contemporary
+            return False
+
+    class Meta:
+        managed = False
+        abstract = True
+        permissions = (("change_history", _("Can change historical records")),)
+
+
+class IncrementalIDKoreModel(KoreModel):
     """
     Needed as Django Autofield doesn't work with an existing database.
     """
@@ -20,8 +41,7 @@ class IncrementalIDKoreModel(models.Model):
             print(self.id)
         return super().save(kwargs)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         abstract = True
 
 
@@ -59,8 +79,7 @@ class ArchiveData(IncrementalIDKoreModel):
     end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
     arkiston_nimi = models.CharField(max_length=510, blank=True, db_column='arkiston_nimi')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Arkistoaineisto'
         verbose_name = _('archive data')
         verbose_name_plural = _('archive datas')
@@ -70,7 +89,7 @@ class ArchiveData(IncrementalIDKoreModel):
                str(self.begin_year) + '-' + (str(self.end_year) if self.end_year else '') + ')'
 
 
-class LifecycleEvent(models.Model):
+class LifecycleEvent(KoreModel):
     school = models.ForeignKey('School', db_column='koulun_id', related_name='lifecycle_event')
     type = models.ForeignKey('LifecycleEventType', db_column='elikaaritapahtuman_lajin_id', verbose_name=_('type'))
     day = models.IntegerField(blank=True, null=True, db_column='paiva', verbose_name=_('day'))
@@ -84,8 +103,7 @@ class LifecycleEvent(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite', verbose_name=_('reference'))
     approx = models.BooleanField(default=False, db_column='noin')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Elinkaaritapahtuma'
         verbose_name = _('lifecycle event')
         verbose_name_plural = _('lifecycle events')
@@ -103,7 +121,7 @@ class LifecycleEventType(models.Model):
         db_table = 'Elinkaaritapahtuman_laji'
 
 
-class SchoolContinuum(models.Model):
+class SchoolContinuum(KoreModel):
     active_school = models.ForeignKey('School', db_column='koulun_a_id', related_name='continuum_active', verbose_name=_('active school'))
     description = models.CharField(max_length=510, blank=True, db_column='selite', verbose_name=_('description'))
     target_school = models.ForeignKey('School', db_column='koulun_b_id', related_name='continuum_target', verbose_name=_('target school'))
@@ -113,8 +131,7 @@ class SchoolContinuum(models.Model):
     reference = models.CharField(max_length=510, blank=True, db_column='viite', verbose_name=_('reference'))
     approx = models.BooleanField(default=False, db_column='noin')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Jatkumo'
         verbose_name = _('continuum event')
         verbose_name_plural = _('continuum events')
@@ -122,7 +139,8 @@ class SchoolContinuum(models.Model):
     def __str__(self):
         return str(self.active_school) + ' ' + str(self.description) + ' ' + str(self.target_school)
 
-class Neighborhood(models.Model):
+
+class Neighborhood(KoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='kaupunginosan_nimi')
     merge_day = models.IntegerField(blank=True, null=True, db_column='liittamispaiva')
@@ -132,8 +150,7 @@ class Neighborhood(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Kaupunginosa'
 
 
@@ -164,18 +181,20 @@ class School(IncrementalIDKoreModel):
         else:
             return str(types[0].value)
 
+    def is_contemporary(self):
+        return self.names.filter(end_year__is_null=True)
+
     @staticmethod
     def autocomplete_search_fields():
         return ("names__types__value__icontains",)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulu'
         verbose_name = _('school')
         verbose_name_plural = _('schools')
 
 
-class SchoolField(models.Model):
+class SchoolField(KoreModel):
     school = models.ForeignKey(School, db_column='koulun_id', related_name='fields')
     field = models.ForeignKey(SchoolFieldName, db_column='alan_id')
     main_school = models.ForeignKey(School, db_column='paakoulun_id', related_name='fields_main')
@@ -198,12 +217,11 @@ class SchoolField(models.Model):
             self.main_school_id = self.school_id
         return super().save(kwargs)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_ala'
 
 
-class SchoolLanguage(models.Model):
+class SchoolLanguage(KoreModel):
     school = models.ForeignKey(School, related_name='languages', db_column='koulun_id')
     language = models.ForeignKey(Language, db_column='kielen_id')
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
@@ -215,12 +233,11 @@ class SchoolLanguage(models.Model):
     def __str__(self):
         return str(self.language)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_kieli'
 
 
-class SchoolType(models.Model):
+class SchoolType(KoreModel):
     school = models.ForeignKey(School, db_column='koulun_id', related_name='types')
     type = models.ForeignKey('SchoolTypeName', db_column='koulutyypin_id', verbose_name=_('type'))
     main_school = models.ForeignKey(School, db_column='paakoulun_id', related_name='main_types')
@@ -243,14 +260,13 @@ class SchoolType(models.Model):
             self.main_school_id = self.school_id
         return super().save(kwargs)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_laatu'
         verbose_name = _('school type')
         verbose_name_plural = _('school types')
 
 
-class SchoolOwnership(models.Model):
+class SchoolOwnership(KoreModel):
     school = models.ForeignKey(School, related_name='owners', db_column='koulun_id')
     owner = models.ForeignKey('OwnerFounder', db_column='omistaja_perustajan_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
@@ -263,22 +279,20 @@ class SchoolOwnership(models.Model):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_omistussuhde'
 
 
-class SchoolFounder(models.Model):
+class SchoolFounder(KoreModel):
     school = models.ForeignKey(School, related_name='founders', db_column='koulun_id')
     founder = models.ForeignKey('OwnerFounder', db_column='omistaja_perustajan_id')
     reference = models.CharField(max_length=510, blank=True, db_column='viite')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_perustajat'
 
 
-class SchoolGender(models.Model):
+class SchoolGender(KoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, related_name='genders', blank=True, null=True, db_column='koulun_id')
     gender = models.CharField(max_length=510, blank=True, db_column='sukupuoli')
@@ -292,8 +306,7 @@ class SchoolGender(models.Model):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Koulun_sukupuoli'
 
 
@@ -310,7 +323,7 @@ class SchoolTypeName(models.Model):
         db_table = 'Koulutyyppi'
 
 
-class NumberOfGrades(models.Model):
+class NumberOfGrades(KoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     school = models.ForeignKey(School, related_name='grade_counts', blank=True, null=True, db_column='koulun_id')
     number = models.IntegerField(blank=True, null=True, db_column='lukumaara')
@@ -324,8 +337,7 @@ class NumberOfGrades(models.Model):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Luokka-asteiden_lukumaara'
 
 
@@ -338,8 +350,7 @@ class NameType(IncrementalIDKoreModel):
     def __str__(self):
         return str(self.type) + ': ' + str(self.value)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Nimen_tyyppi'
         verbose_name = _('name type')
         verbose_name_plural = _('name types')
@@ -375,21 +386,19 @@ class SchoolName(IncrementalIDKoreModel):
     def __str__(self):
         return str(self.get_official_name())
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Nimi'
         verbose_name = _('school name')
         verbose_name_plural = _('school names')
 
 
-class OwnerFounder(models.Model):
+class OwnerFounder(KoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True)
     name = models.CharField(max_length=510, blank=True, db_column='nimi')
     type = models.ForeignKey('OwnerFounderType', blank=True, null=True,
                              db_column='omistaja_perustajatyypin_id')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Omistaja_Perustaja'
 
 
@@ -419,8 +428,7 @@ class Address(IncrementalIDKoreModel):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Osoite'
         verbose_name = _('address')
         verbose_name_plural = _('addresses')
@@ -469,12 +477,11 @@ class BuildingName(IncrementalIDKoreModel):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rakennuksen_nimi'
 
 
-class BuildingOwnership(models.Model):
+class BuildingOwnership(KoreModel):
     building = models.ForeignKey('Building', db_column='rakennuksen_id', related_name='owners')
     owner = models.ForeignKey(OwnerFounder, db_column='omistaja_perustajan_id')
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
@@ -487,24 +494,22 @@ class BuildingOwnership(models.Model):
     approx_begin = models.BooleanField(default=False, db_column='noin_a')
     approx_end = models.BooleanField(default=False, db_column='noin_p')
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rakennuksen_omistussuhde'
 
 
-class BuildingAddress(models.Model):
+class BuildingAddress(KoreModel):
     building = models.ForeignKey('Building', db_column='rakennuksen_id', verbose_name=_('building'))
     address = models.ForeignKey(Address, db_column='osoitteen_id',
                                 related_name='buildings', verbose_name=_('address'))
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rakennuksen_osoite'
         verbose_name = _('building address')
         verbose_name_plural = _('building addresses')
 
 
-class SchoolBuilding(models.Model):
+class SchoolBuilding(KoreModel):
     id = models.CharField(max_length=100, primary_key=True)
     school = models.ForeignKey(School, related_name='buildings', db_column='koulun_id')
     building = models.ForeignKey('Building', related_name='schools', db_column='rakennuksen_id', verbose_name=_('building'))
@@ -539,8 +544,7 @@ class SchoolBuilding(models.Model):
             self.id = str(self.school_id) + '-' + str(self.building_id)
         return super().save(kwargs)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rakennuksen_status'
         ordering = ['school']
         verbose_name = _('school building')
@@ -586,8 +590,7 @@ class Building(IncrementalIDKoreModel):
     def autocomplete_search_fields():
         return ("addresses__street_name_fi__icontains",)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rakennus'
         verbose_name = _('building')
         verbose_name_plural = _('buildings')
@@ -601,12 +604,14 @@ class Principal(IncrementalIDKoreModel):
     def __str__(self):
         return str(self.surname) + ', ' + str(self.first_name)
 
+    def is_contemporary(self):
+        return self.employers.filter(end_year__is_null=True)
+
     @staticmethod
     def autocomplete_search_fields():
         return ("surname__icontains", "first_name__icontains",)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Rehtori'
         verbose_name = _('principal')
         verbose_name_plural = _('principals')
@@ -630,14 +635,13 @@ class Employership(IncrementalIDKoreModel):
     def __str__(self):
         return str(self.principal) + ' - ' + str(self.school)
 
-    class Meta:
-        managed = False
+    class Meta(KoreModel.Meta):
         db_table = 'Tyosuhde'
         verbose_name = _('employership')
         verbose_name_plural = _('employerships')
 
 
-class SchoolBuildingPhoto(models.Model):
+class SchoolBuildingPhoto(KoreModel):
     school_building = models.ForeignKey(SchoolBuilding, related_name='photos')
     url = models.URLField()
     is_front = models.BooleanField(default=True, help_text=_("Is this a picture of the building front?"),
@@ -646,24 +650,32 @@ class SchoolBuildingPhoto(models.Model):
     def __str__(self):
         return str(self.school_building)
 
-    class Meta:
+    def is_contemporary(self):
+        return self.school_building.is_contemporary()
+
+    class Meta(KoreModel.Meta):
+        managed = True
         verbose_name = _('school building photo')
         verbose_name_plural = _('school building photos')
 
 
-class ArchiveDataLink(models.Model):
+class ArchiveDataLink(KoreModel):
     archive_data = models.OneToOneField(ArchiveData, related_name='link', db_index=True)
     url = models.URLField()
 
     def __str__(self):
         return str(self.url)
 
-    class Meta:
+    def is_contemporary(self):
+        return self.archive_data.is_contemporary()
+
+    class Meta(KoreModel.Meta):
+        managed = True
         verbose_name = _('archive data link')
         verbose_name_plural = _('archive data link')
 
 
-class AddressLocation(models.Model):
+class AddressLocation(KoreModel):
     address = models.OneToOneField(Address, related_name='location', db_index=True)
     location = models.PointField(srid=4326, null=True, blank=True)
     handmade = models.BooleanField(default=False, verbose_name=_("Update location by hand"),
@@ -683,6 +695,10 @@ class AddressLocation(models.Model):
             schools_str = ''
         return str(self.address) + ' <=> ' + str(self.location) + schools_str
 
-    class Meta:
+    def is_contemporary(self):
+        return self.address.is_contemporary()
+
+    class Meta(KoreModel.Meta):
+        managed = True
         verbose_name = _('address location')
         verbose_name_plural = _('address locations')

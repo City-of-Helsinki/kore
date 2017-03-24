@@ -22,7 +22,17 @@ class KoreAdmin(nested_admin.NestedModelAdmin):
         return actions
 
     def has_add_permission(self, request):
-        return True
+        return super().has_add_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Admin user is either allowed to edit all objects, or only contemporary data. Contemporaneity of
+        the data is deduced on a model by model basis on the presence of end_year, and requires
+        implementing is_contemporary method in each model.
+        """
+        if obj and not request.user.has_perm('schools.change_history') and not obj.is_contemporary():
+            return False
+        return super().has_change_permission(request, obj)
 
 
 class ContemporaryFilter(admin.SimpleListFilter):
