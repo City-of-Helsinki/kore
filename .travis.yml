@@ -5,7 +5,7 @@ python:
 
 cache: pip
 
-install: 'pip install codecov -r requirements.txt'
+install: 'pip install codecov pytest-coverage -r requirements.txt'
 
 script: pytest --cov .
 
