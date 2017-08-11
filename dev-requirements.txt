@@ -3,3 +3,5 @@
 werkzeug
 line_profiler
 django-debug-toolbar
+pytest-django
+pytest-cov
