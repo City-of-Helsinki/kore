@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from rest_framework import routers, serializers, viewsets, mixins, filters, relations
 from munigeo.api import GeoModelSerializer
 from rest_framework.serializers import ListSerializer, LIST_SERIALIZER_KWARGS
@@ -20,9 +18,9 @@ class CensoredManyRelatedField(relations.ManyRelatedField):
     """
     def to_representation(self, iterable):
         if iterable.model is Employership:
-            iterable = iterable.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+            iterable = iterable.filter(end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
         if iterable.mode is Principal:
-            iterable.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+            iterable.filter(employers__end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
         return super().to_representation(iterable)
 
 
@@ -40,9 +38,9 @@ class CensoredListSerializer(serializers.ListSerializer):
         iterable = data.all() if isinstance(data, models.Manager) else data
 
         if iterable.model is Employership:
-            iterable = iterable.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+            iterable = iterable.filter(end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
         if iterable.model is Principal:
-            iterable = iterable.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+            iterable = iterable.filter(employers__end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
         return [
             self.child.to_representation(item) for item in iterable
         ]
@@ -94,6 +92,7 @@ class SchoolLanguageSerializer(serializers.ModelSerializer):
 class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Language
+        fields = '__all__'
 
 
 class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
@@ -104,6 +103,7 @@ class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
 class SchoolTypeNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolTypeName
+        fields = '__all__'
 
 
 class SchoolTypeNameViewSet(viewsets.ReadOnlyModelViewSet):
@@ -156,6 +156,7 @@ class SchoolNumberOfGradesSerializer(serializers.ModelSerializer):
 class NeighborhoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Neighborhood
+        fields = '__all__'
 
 
 class AddressLocationSerializer(GeoModelSerializer):
@@ -175,12 +176,14 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
+        fields = '__all__'
 
 
 class DataTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DataType
+        fields = '__all__'
 
 
 class ArchiveDataSerializer(serializers.ModelSerializer):
@@ -197,6 +200,7 @@ class OwnerFounderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OwnerFounder
+        fields = '__all__'
 
 
 class SchoolOwnershipSerializer(serializers.ModelSerializer):
@@ -440,7 +444,7 @@ class InclusiveFilter(django_filters.Filter):
 
     def filter(self, qs, value):
         originalqs = super().filter(qs, value)
-        self.lookup_type = 'isnull'
+        self.lookup_expr = 'isnull'
         nullqs = super().filter(qs, value)
         return nullqs | originalqs
 
@@ -494,12 +498,12 @@ class GenderFilter(django_filters.CharFilter):
 
 class SchoolFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="names__end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="names__begin_year", lookup_type='lte')
-    type = NameOrIdFilter(name="types__type__name", lookup_type='iexact')
-    field = NameOrIdFilter(name="fields__field__description", lookup_type='iexact')
-    language = NameOrIdFilter(name="languages__language__name", lookup_type='iexact')
-    gender = GenderFilter(name="genders__gender", lookup_type='iexact')
+    from_year = InclusiveNumberFilter(name="names__end_year", lookup_expr='gte')
+    until_year = django_filters.NumberFilter(name="names__begin_year", lookup_expr='lte')
+    type = NameOrIdFilter(name="types__type__name", lookup_expr='iexact')
+    field = NameOrIdFilter(name="fields__field__description", lookup_expr='iexact')
+    language = NameOrIdFilter(name="languages__language__name", lookup_expr='iexact')
+    gender = GenderFilter(name="genders__gender", lookup_expr='iexact')
 
     class Meta:
         model = School
@@ -542,13 +546,13 @@ class NameFilter(django_filters.CharFilter):
 
 class PrincipalFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="employers__end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_type='lte')
-    search = NameFilter(name="surname", lookup_type='icontains')
-    school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_type='iexact')
-    school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_type='iexact')
-    school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_type='iexact')
-    school_gender = GenderFilter(name="employers__school__genders__gender", lookup_type='iexact')
+    from_year = InclusiveNumberFilter(name="employers__end_year", lookup_expr='gte')
+    until_year = django_filters.NumberFilter(name="employers__begin_year", lookup_expr='lte')
+    search = NameFilter(name="surname", lookup_expr='icontains')
+    school_type = NameOrIdFilter(name="employers__school__types__type__name", lookup_expr='iexact')
+    school_field = NameOrIdFilter(name="employers__school__fields__field__description", lookup_expr='iexact')
+    school_language = NameOrIdFilter(name="employers__school__languages__language__name", lookup_expr='iexact')
+    school_gender = GenderFilter(name="employers__school__genders__gender", lookup_expr='iexact')
 
     class Meta:
         model = Principal
@@ -563,13 +567,13 @@ class PrincipalFilter(django_filters.FilterSet):
 
 class EmployershipFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
-    search = NameFilter(name="principal__surname", lookup_type='icontains')
-    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
-    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
-    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
-    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
+    from_year = InclusiveNumberFilter(name="end_year", lookup_expr='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_expr='lte')
+    search = NameFilter(name="principal__surname", lookup_expr='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_expr='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_expr='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_expr='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_expr='iexact')
 
     class Meta:
         model = Employership
@@ -583,14 +587,14 @@ class EmployershipFilter(django_filters.FilterSet):
 
 
 class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Principal.objects.filter(employers__end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+    queryset = Principal.objects.filter(employers__end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
 
 
 class EmployershipViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Employership.objects.filter(end_year__lt=datetime.now().year-YEARS_OF_PRIVACY)
+    queryset = Employership.objects.filter(end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
     serializer_class = EmployershipSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = EmployershipFilter
@@ -611,13 +615,13 @@ class AddressFilter(django_filters.CharFilter):
 
 class SchoolBuildingFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="begin_year", lookup_type='lte')
-    search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_type='icontains')
-    school_type = NameOrIdFilter(name="school__types__type__name", lookup_type='iexact')
-    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_type='iexact')
-    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_type='iexact')
-    school_gender = GenderFilter(name="school__genders__gender", lookup_type='iexact')
+    from_year = InclusiveNumberFilter(name="end_year", lookup_expr='gte')
+    until_year = django_filters.NumberFilter(name="begin_year", lookup_expr='lte')
+    search = AddressFilter(name="building__buildingaddress__address__street_name_fi", lookup_expr='icontains')
+    school_type = NameOrIdFilter(name="school__types__type__name", lookup_expr='iexact')
+    school_field = NameOrIdFilter(name="school__fields__field__description", lookup_expr='iexact')
+    school_language = NameOrIdFilter(name="school__languages__language__name", lookup_expr='iexact')
+    school_gender = GenderFilter(name="school__genders__gender", lookup_expr='iexact')
 
     class Meta:
         model = SchoolBuilding
@@ -632,13 +636,13 @@ class SchoolBuildingFilter(django_filters.FilterSet):
 
 class BuildingFilter(django_filters.FilterSet):
     # the end year can be null, so we cannot use a default filter
-    from_year = InclusiveNumberFilter(name="schools__end_year", lookup_type='gte')
-    until_year = django_filters.NumberFilter(name="schools__begin_year", lookup_type='lte')
-    search = AddressFilter(name="buildingaddress__address__street_name_fi", lookup_type='icontains')
-    school_type = NameOrIdFilter(name="schools__school__types__type__name", lookup_type='iexact')
-    school_field = NameOrIdFilter(name="schools__school__fields__field__description", lookup_type='iexact')
-    school_language = NameOrIdFilter(name="schools__school__languages__language__name", lookup_type='iexact')
-    school_gender = GenderFilter(name="schools__school__genders__gender", lookup_type='iexact')
+    from_year = InclusiveNumberFilter(name="schools__end_year", lookup_expr='gte')
+    until_year = django_filters.NumberFilter(name="schools__begin_year", lookup_expr='lte')
+    search = AddressFilter(name="buildingaddress__address__street_name_fi", lookup_expr='icontains')
+    school_type = NameOrIdFilter(name="schools__school__types__type__name", lookup_expr='iexact')
+    school_field = NameOrIdFilter(name="schools__school__fields__field__description", lookup_expr='iexact')
+    school_language = NameOrIdFilter(name="schools__school__languages__language__name", lookup_expr='iexact')
+    school_gender = GenderFilter(name="schools__school__genders__gender", lookup_expr='iexact')
 
     class Meta:
         model = Building

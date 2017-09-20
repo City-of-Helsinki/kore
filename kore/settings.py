@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'modeltranslation',
     'leaflet',
     'munigeo',
-    'schools'
+    'schools',
+    'django_filters'
 ]
 
 if DEBUG:
@@ -122,10 +123,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "var", "static")
 LOCALE_PATH = os.path.join(BASE_DIR, "schools", "locale")
 
 REST_FRAMEWORK = {
-    'PAGINATE_BY': 20,                 # Default to 10
+    'PAGE_SIZE': 20,
     'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
     'MAX_PAGINATE_BY': 1000,             # Maximum limit allowed when using `?page_size=xxx`.
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS':
+        ('rest_framework.filters.DjangoFilterBackend',)
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

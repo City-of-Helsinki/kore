@@ -1,7 +1,7 @@
 Django==1.9.13
-djangorestframework<3.2.3
+djangorestframework
 Markdown
-django-filter<0.12
+django-filter
 django-grappelli
 django-nested-admin
 django-leaflet
@@ -9,5 +9,5 @@ psycopg2
 raven
 django-extensions
 django-cors-headers
--e git+https://github.com/City-of-Helsinki/munigeo#egg=django-munigeo-master
+-e git+https://github.com/City-of-Helsinki/munigeo@v0.2.1#egg=django-munigeo-master
 django-debug-toolbar
