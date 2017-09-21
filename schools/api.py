@@ -587,7 +587,7 @@ class EmployershipFilter(django_filters.FilterSet):
 
 
 class PrincipalViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Principal.objects.filter(employers__end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY)
+    queryset = Principal.objects.filter(employers__end_year__lt=datetime.datetime.now().year-YEARS_OF_PRIVACY).distinct()
     serializer_class = PrincipalSerializer
     filter_backends = (filters.SearchFilter, filters.DjangoFilterBackend)
     filter_class = PrincipalFilter
