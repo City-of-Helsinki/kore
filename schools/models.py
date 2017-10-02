@@ -194,6 +194,22 @@ class School(IncrementalIDKoreModel):
         verbose_name_plural = _('schools')
 
 
+class SchoolUnitNumber(KoreModel):
+    number = models.IntegerField(primary_key=True)
+    school = models.ForeignKey(School, blank=False, null=False, related_name='unit_numbers')
+    begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
+    begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
+    begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
+    end_day = models.IntegerField(blank=True, null=True, db_column='paattymispaiva', verbose_name=_('end day'))
+    end_month = models.IntegerField(blank=True, null=True, db_column='paattymiskuukausi', verbose_name=_('end month'))
+    end_year = models.IntegerField(blank=True, null=True, db_column='paattymisvuosi', verbose_name=_('end year'))
+
+    class Meta(KoreModel.Meta):
+        managed = True
+        verbose_name = _('unit number')
+        verbose_name_plural = _('unit numbers')
+
+
 class SchoolField(KoreModel):
     school = models.ForeignKey(School, db_column='koulun_id', related_name='fields')
     field = models.ForeignKey(SchoolFieldName, db_column='alan_id')
