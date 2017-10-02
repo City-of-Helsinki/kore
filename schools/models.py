@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
+from django.db.models import deletion
 from django.forms import ValidationError
 from munigeo.models import Address as Location
 from django.utils.translation import ugettext_lazy as _
@@ -635,9 +636,9 @@ class Principal(IncrementalIDKoreModel):
 
 class Employership(IncrementalIDKoreModel):
     id = models.IntegerField(db_column='ID', primary_key=True, editable=False)
-    school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id')
+    school = models.ForeignKey(School, blank=True, null=True, related_name='principals', db_column='koulun_id', on_delete=deletion.SET_NULL)
     nimen_id = models.IntegerField(blank=True, null=True, db_column='nimen_id')
-    principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id', verbose_name=_('principal'))
+    principal = models.ForeignKey(Principal, blank=True, null=True, related_name='employers', db_column='rehtorin_id', verbose_name=_('principal'), on_delete=deletion.SET_NULL)
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
@@ -652,6 +653,7 @@ class Employership(IncrementalIDKoreModel):
         return str(self.principal) + ' - ' + str(self.school)
 
     class Meta(KoreModel.Meta):
+        managed = True
         db_table = 'Tyosuhde'
         verbose_name = _('employership')
         verbose_name_plural = _('employerships')

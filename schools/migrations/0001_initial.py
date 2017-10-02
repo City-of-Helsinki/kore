@@ -133,7 +133,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Employership',
             fields=[
-                ('id', models.IntegerField(db_column='ID', primary_key=True, serialize=False)),
+                ('id', models.IntegerField(db_column='ID', blank=False, null=False, unique=True, serialize=False)),
                 ('nimen_id', models.IntegerField(db_column='nimen_id', blank=True, null=True)),
                 ('begin_day', models.IntegerField(db_column='alkamispaiva', blank=True, null=True)),
                 ('begin_month', models.IntegerField(db_column='alkamiskuukausi', blank=True, null=True)),
