@@ -202,13 +202,22 @@ class ArchiveDataInline(nested_admin.NestedTabularInline):
     inlines = [ArchiveDataLinkInline]
 
 
+class UnitNumberInline(nested_admin.NestedTabularInline):
+    model = SchoolUnitNumber
+    exclude = ()
+    extra = 0
+    ordering = ('end_year',)
+    classes = ('grp-collapse grp-open',)
+
+
 @admin.register(School)
 class SchoolAdmin(KoreAdmin):
-    exclude = ('id', 'special_features', 'wartime_school', 'checked')
+    exclude = ('id', 'wartime_school', 'checked')
     list_display = ('__str__',)
     list_filter = ('types__type', ContemporarySchoolFilter,)
-    search_fields = ['names__types__value']
-    inlines = [SchoolNameInline,
+    search_fields = ['names__types__value', 'unit_numbers__number']
+    inlines = [UnitNumberInline,
+               SchoolNameInline,
                LifeCycleEventInline,
                SchoolContinuumActiveInline,
                SchoolContinuumTargetInline,

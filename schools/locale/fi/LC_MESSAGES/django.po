@@ -333,3 +333,15 @@ msgstr "Koulu tässä rakennuksessa"
 #: models.py:228
 msgid "Schools in this building"
 msgstr "Koulut tässä rakennuksessa"
+
+#: models.py:200
+msgid "unit numbers"
+msgstr "kouluyksikkönumerot"
+
+#: models.py:210
+msgid "unit number"
+msgstr "kouluyksikkönumero"
+
+#: models.py:172
+msgid "special features"
+msgstr "Lisätiedot"

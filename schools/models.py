@@ -169,7 +169,7 @@ class Language(models.Model):
 
 class School(IncrementalIDKoreModel):
     id = models.AutoField(db_column='ID', primary_key=True, editable=False)
-    special_features = models.TextField(blank=True, db_column='erityispiirteet')
+    special_features = models.TextField(blank=True, db_column='erityispiirteet', verbose_name=_('special features'))
     wartime_school = models.BooleanField(default=False, db_column='sota_ajan_koulu')
     nicknames = models.CharField(max_length=510, blank=True, db_column='lempinimet', verbose_name=_('nicknames'))
     checked = models.BooleanField(default=False, db_column='tarkastettu')
@@ -197,7 +197,7 @@ class School(IncrementalIDKoreModel):
 
 class SchoolUnitNumber(KoreModel):
     number = models.IntegerField(primary_key=True)
-    school = models.ForeignKey(School, blank=False, null=False, related_name='unit_numbers')
+    school = models.ForeignKey(School, blank=False, null=False, related_name='unit_numbers', verbose_name=_('unit numbers'))
     begin_day = models.IntegerField(blank=True, null=True, db_column='alkamispaiva', verbose_name=_('begin day'))
     begin_month = models.IntegerField(blank=True, null=True, db_column='alkamiskuukausi', verbose_name=_('start month'))
     begin_year = models.IntegerField(blank=True, null=True, db_column='alkamisvuosi', verbose_name=_('start year'))
