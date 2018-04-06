@@ -73,3 +73,11 @@ start your virtualenv if you use one.
 source venv/bin/activate
 python manage.py runserver
 ```
+
+## Running in production
+You can serve out KORE using your favorite WSGI-capable application server.
+The WSGI-entrypoint for KORE is kore.wsgi or in file kore/wsgi.py. Former
+is used by gunicorn, latter by uwsgi. The callable is `application`.
+
+You will also need to serve out static and media folders at /static and /media
+in your URL space. Note STATIC_URL and MEDIA_URL settings
