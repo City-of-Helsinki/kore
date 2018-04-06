@@ -8,7 +8,7 @@ schools. It is based on a model designed for Helsinki schools, but it is not
 supposed to be specific only to Helsinki.
 
 KORE outputs the data by the way of ReST API. The UI pair of KORE is the
-imaginatively named KORE-ui. KORE-ui can show the data served out by KORE
+imaginatively named KORE-ui. [KORE-ui](https://https://github.com/City-of-Helsinki/kore-ui) can show the data served out by KORE
 in pretty fashion with maps and all. You really should take a
 [look](https://koulurekisteri.hel.fi) at it! (It is somewhat Helsinki specific,sadly.)
 
