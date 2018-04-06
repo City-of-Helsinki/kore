@@ -7,7 +7,10 @@ KORE is a backend service for storing current and historical information about
 schools. It is based on a model designed for Helsinki schools, but it is not
 supposed to be specific only to Helsinki.
 
-KORE outputs the data by the way of ReST API.
+KORE outputs the data by the way of ReST API. The UI pair of KORE is the
+imaginatively named KORE-ui. KORE-ui can show the data served out by KORE
+in pretty fashion with maps and all. You really should take a
+[look](https://koulurekisteri.hel.fi) at it! (It is somewhat Helsinki specific,sadly.)
 
 Editing data is currently done by using a somewhat simplistic UI based on
 Django admin. In case you are not familiar with Django admin, it is a simple
@@ -61,7 +64,7 @@ containing Python code. However we have created a level of indirection:
 
 The file `local_settings.py.example` contains typical settings you will want
 to change when running. It is commented with short explanations of the
-relevant settings. Most of them are standard Django settings though, and you
+relevant settings. Most of them are standard Django settings, and you
 should refer to Django documentation for those.
 
 Note though, that only DATABASE needs be set correctly in development.
