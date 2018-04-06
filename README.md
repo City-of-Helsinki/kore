@@ -13,26 +13,25 @@ Editing data is currently done by using a somewhat simplistic UI based on
 Django admin. In case you are not familiar with Django admin, it is a simple
 forms based editor of Web 1.0 style.
 
-## How to set up
-
-### Prerequisites
-
-* Python 3
-* PostgreSQL (other databases are not tested at all)
-
-### Installation
+## Installation
 
 This applies to both development and simple production scale (school
 information rarely causes a stampede of viewers). Note that you
 won't need to follow this approach if you have your own favorite Python
 process.
 
-Begin by cloning the repository:
+### Prerequisites
+
+* Python 3
+* PostgreSQL (other databases are not tested at all)
+
+### Clone the repository
+If you haven't already:
 ```
 https://github.com/City-of-Helsinki/kerrokantasi.git
 ```
 
-#### Virtualenv setup
+### Virtualenv setup
 
 This step creates a virtualenv in your current working directory. You may
 place it anywhere you want, although it might to useful to put it somewhere
@@ -47,14 +46,14 @@ Activate the virtualenv (for installing requirements)
 source venv/bin/activate
 ```
 
-#### Install requirements
+### Install requirements
 
 We use prequ to manage dependencies. It is a tool similar to pip-tools.
 ```
 prequ sync
 ```
 
-#### Configuration
+### Configuration
 
 KORE is a Python/Django project configured in the typical way: a file
 containing Python code. However we have created a level of indirection:
@@ -67,9 +66,10 @@ should refer to Django documentation for those.
 
 Note though, that only DATABASE needs be set correctly in development.
 
-#### Running development server
-Django has a development server that autoloads your changes:
-
+## Running in development
+Django has a development server that autoloads your changes. Remember to
+start your virtualenv if you use one.
 ```
+source venv/bin/activate
 python manage.py runserver
 ```
