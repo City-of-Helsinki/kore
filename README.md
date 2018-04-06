@@ -28,6 +28,13 @@ process.
 * Python 3
 * PostgreSQL (other databases are not tested at all)
 
+### Preparing the data
+
+KORE has its roots in an SQL database designed in City of Helsinki. This
+means it cannot be initialized using the normal Django means. Instead you
+must provide it with an already initialized database. Currently there is no
+template for this available. Ask, if you are interested.
+
 ### Clone the repository
 If you haven't already:
 ```
