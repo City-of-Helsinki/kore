@@ -16,7 +16,7 @@ django-leaflet==0.22.0
 django-modeltranslation==0.12.1
 django-mptt==0.8.7
 django-nested-admin==3.0.20
-django==1.11.12
+django==1.11.15
 djangorestframework==3.6.4
 idna==2.6                 # via requests
 markdown==2.6.9
@@ -26,6 +26,6 @@ pytz==2017.2              # via django
 pyyaml==3.12
 raven==6.1.0
 requests-cache==0.4.13
-requests==2.18.4          # via requests-cache
+requests==2.20.1          # via requests-cache
 six==1.11.0               # via django-extensions, python-monkey-business
 urllib3==1.22             # via requests
