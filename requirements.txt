@@ -28,4 +28,4 @@ raven==6.1.0
 requests-cache==0.4.13
 requests==2.20.1          # via requests-cache
 six==1.11.0               # via django-extensions, python-monkey-business
-urllib3==1.22             # via requests
+urllib3==1.24.1             # via requests
