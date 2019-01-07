@@ -17,7 +17,7 @@ django-leaflet==0.22.0
 django-modeltranslation==0.12.1
 django-mptt==0.8.7
 django-nested-admin==3.0.20
-django==1.11.15
+django==1.11.18
 djangorestframework==3.6.4
 idna==2.6                 # via requests
 markdown==2.6.9
