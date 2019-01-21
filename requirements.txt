@@ -24,7 +24,7 @@ markdown==2.6.9
 psycopg2==2.7.3.1
 python-monkey-business==1.0.0  # via django-nested-admin
 pytz==2017.2              # via django
-pyyaml==3.12
+pyyaml==3.13
 raven==6.1.0
 requests-cache==0.4.13
 requests==2.20.1          # via requests-cache
