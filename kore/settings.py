@@ -1,29 +1,57 @@
 """
-Django settings for kore project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
+Django settings for KORE
 """
+import os
+import environ
+import raven
+
+root = environ.Path(__file__) - 2  # two folders back
+env = environ.Env(
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, ''),
+    ALLOWED_HOSTS=(list, []),
+    ADMINS=(list, []),
+    DATABASE_URL=(str, 'postgis:///kore'),
+    SECURE_PROXY_SSL_HEADER=(tuple, None),
+    MEDIA_ROOT=(environ.Path(), root('media')),
+    STATIC_ROOT=(environ.Path(), root('static')),
+    MEDIA_URL=(str, '/media/'),
+    STATIC_URL=(str, '/static/'),
+    SENTRY_DSN=(str, ''),
+    SENTRY_ENVIRONMENT=(str, ''),
+    COOKIE_PREFIX=(str, 'kore'),
+    INTERNAL_IPS=(list, []),
+)
+
+env_file = root('config.env')
+# read_env is stupidly verbose when this file is missing
+if os.path.isfile(env_file):
+    env.read_env(env_file)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = root()
 
+DEBUG = env('DEBUG')
+SECRET_KEY = env.str('SECRET_KEY')
+if DEBUG and not SECRET_KEY:
+    SECRET_KEY = 'xxx'
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ADMINS = env('ADMINS')
+DATABASES = {'default': env.db()}
+SECURE_PROXY_SSL_HEADER = env('SECURE_PROXY_SSL_HEADER')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+MEDIA_ROOT = env('MEDIA_ROOT')
+STATIC_ROOT = env('STATIC_ROOT')
+MEDIA_URL = env('MEDIA_URL')
+STATIC_URL = env('STATIC_URL')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '9j++(0=dc&6w&113d4bofcjy1xy-pe$frla&=s*8w94=0ym0@&'
+SECURE_PROXY_SSL_HEADER = env('SECURE_PROXY_SSL_HEADER')
+INTERNAL_IPS = env.list('INTERNAL_IPS',
+                        default=(['127.0.0.1'] if DEBUG else []))
+CORS_ORIGIN_ALLOW_ALL = True
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+CSRF_COOKIE_NAME = '{}-csrftoken'.format(env('COOKIE_PREFIX'))
+SESSION_COOKIE_NAME = '{}-sessionid'.format(env('COOKIE_PREFIX'))
 
 # Application definition
 
@@ -37,7 +65,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'raven.contrib.django.raven_compat',
     'django_extensions',
     'rest_framework',
     'corsheaders',
@@ -52,6 +79,14 @@ if DEBUG:
     # INSTALLED_APPS.insert(0, 'devserver')
     # INSTALLED_APPS.insert(0, 'debug_toolbar')
     pass
+
+if env('SENTRY_DSN'):
+    RAVEN_CONFIG = {
+        'dsn': env('SENTRY_DSN'),
+        'environment': env('SENTRY_ENVIRONMENT'),
+        'release': raven.fetch_git_sha(BASE_DIR),
+    }
+    INSTALLED_APPS.append('raven.contrib.django.raven_compat')
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.locale.LocaleMiddleware',
@@ -69,17 +104,6 @@ ROOT_URLCONF = 'kore.urls'
 
 WSGI_APPLICATION = 'kore.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'kore',
-    }
-}
-
 # Munigeo
 # https://github.com/City-of-Helsinki/munigeo
 
@@ -94,7 +118,6 @@ DEFAULT_OCD_MUNICIPALITY = 'kunta'
 BOUNDING_BOX = [-548576, 6291456, 1548576, 8388608]
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.7/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -113,11 +136,6 @@ LANGUAGES = (
     ('en', gettext('English')),
 )
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.7/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "var", "static")
 LOCALE_PATH = os.path.join(BASE_DIR, "schools", "locale")
 
 REST_FRAMEWORK = {
@@ -152,8 +170,6 @@ TEMPLATES = [
         },
     },
 ]
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 # local_settings.py can be used to override environment-specific settings
 # like database and email that differ between development and production.
