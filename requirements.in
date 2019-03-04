@@ -9,4 +9,5 @@ psycopg2
 raven
 django-extensions
 django-cors-headers
+django-environ
 -e git+https://github.com/City-of-Helsinki/munigeo@v0.2.12#egg=django-munigeo
