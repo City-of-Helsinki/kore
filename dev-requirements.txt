@@ -1,7 +1,9 @@
 -r requirements.txt
 -e git+https://github.com/coagulant/django-devserver.git#egg=django_devserver
 werkzeug
-line_profiler
+# Does not seem to work anymore?
+#line_profiler
 django-debug-toolbar
 pytest-django
 pytest-cov
+pip-tools
