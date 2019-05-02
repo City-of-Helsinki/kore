@@ -10,4 +10,3 @@ raven
 django-extensions
 django-cors-headers
 django-munigeo<0.3
-django-debug-toolbar
