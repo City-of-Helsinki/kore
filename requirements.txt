@@ -29,4 +29,4 @@ requests-cache==0.4.13
 requests==2.21.0          # via requests-cache
 six==1.11.0               # via django-extensions, python-monkey-business
 sqlparse==0.2.3           # via django-debug-toolbar
-urllib3==1.24.2           # via requests
+urllib3==1.24.3           # via requests
